@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for, session, abort
 from dotenv import load_dotenv
 import os
 import json
@@ -38,6 +38,37 @@ def get_root_member_by_id(member_id):
     return None
 
 
+def init_generated_team():
+    if "generated_team" not in session:
+        session["generated_team"] = {
+            "team_name": "",
+            "team_intro": "",
+            "team_image": "images/default-team.png",
+            "members": [],
+            "next_member_id": 1000
+        }
+
+
+def get_generated_team():
+    init_generated_team()
+    return session["generated_team"]
+
+
+def save_generated_team(team):
+    session["generated_team"] = team
+    session.modified = True
+
+
+def get_generated_member_by_id(member_id):
+    team = get_generated_team()
+
+    for member in team.get("members", []):
+        if int(member.get("id")) == member_id:
+            return member
+
+    return None
+
+
 @app.route("/")
 def index():
     # ROOT 팀 소개 메인 페이지
@@ -52,17 +83,31 @@ def index():
 
 @app.route("/members/<int:member_id>")
 def member_detail(member_id):
-    # 팀원 상세조회 페이지
-    member = get_root_member_by_id(member_id)
+    root_member = get_root_member_by_id(member_id)
 
-    if member is None:
-        return "존재하지 않는 팀원입니다.", 404
+    if root_member:
+        return render_template(
+            "member_detail.html",
+            member=root_member,
+            is_root_member=True
+        )
 
-    return render_template(
-        "member_detail.html",
-        member=member,
-        is_root_member=True
-    )
+    generated_member = get_generated_member_by_id(member_id)
+
+    if generated_member:
+        return render_template(
+            "member_detail.html",
+            member=generated_member,
+            is_root_member=False
+        )
+
+    abort(404)
+
+#테스트용
+@app.route("/reset")
+def reset_generated_team():
+    session.pop("generated_team", None)
+    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":
