@@ -1,2 +1,23 @@
-<!-- 승현님 이 Subject3_1 폴더의 파이썬 파일과 html 파일에 팀과제3_1의 코드 작성해주시면 됩니다! -->
-<!-- 작업 완료 시 이 주석은 삭제해주세요 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Input Page</title>
+</head>
+<body>
+    <form action="/result" method="POST">
+        <p>Name <input type='text' name='name'></p> 
+        
+        <p>Student Number <input type='text' name='student_number'></p>
+        
+        <p>Gender </p>
+        <div class="vertical-group">
+            <label><input type="radio" name="gender" value="Male"> Male</label>
+            <label><input type="radio" name="gender" value="Female"> Female</label>
+        </div>
+        
+        <br>
+        <button type='submit'>submit</button>
+    </form>
+</body>
+</html>

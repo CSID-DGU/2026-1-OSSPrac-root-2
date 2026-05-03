@@ -1,2 +1,20 @@
-# 승현님 이 Subject3_1 폴더의 파이썬 파일과 html 파일에 팀과제3_1의 코드 작성해주시면 됩니다!
-# 작업 완료 시 이 주석은 삭제해주세요
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
+
+@app.route('/')
+def input_page():
+    return render_template('input.html')
+
+@app.route('/result', methods=['POST', 'GET'])
+def result():
+    if request.method == 'POST':
+        result = dict()
+        result['Name'] = request.form.get('name')
+        result['StudentNumber'] = request.form.get('student_number')
+        result['Gender'] = request.form.get('gender')
+        
+        return render_template('result.html', result=result)
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
