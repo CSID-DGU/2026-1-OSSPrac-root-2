@@ -112,13 +112,23 @@ def index():
 
 @app.route("/input")
 def input_page():
-    # 팀페이지 제작 페이지
+    # 팀페이지 제작 및 팀원 입력/수정 페이지
+    # /input 새 팀원 입력 모드
+    # /input?member_id=1000 기존 팀원 수정 모드
     team = get_generated_team()
+    member_id = request.args.get("member_id", type=int)
+
+    member = None
+    if member_id:
+        member = get_generated_member_by_id(member_id)
+
+        if member is None:
+            abort(404)
 
     return render_template(
         "input.html",
         team=team,
-        member=None,
+        member=member,
         member_count=len(team.get("members", []))
     )
 
@@ -126,7 +136,7 @@ def input_page():
 @app.route("/member/update", methods=["POST"])
 def update_member():
     """
-    팀 정보 저장, 팀원 추가, 팀페이지 만들기 요청을 처리한다.
+    팀 정보 저장 + 팀원 추가 + 팀원 수정 처리
     """
     team = get_generated_team()
 
@@ -141,31 +151,24 @@ def update_member():
     )
 
     action = request.form.get("action", "add")
+    member_id = request.form.get("member_id", type=int)  # 수정 여부 판단용
 
-    # 팀페이지 만들기 버튼을 누른 경우
+    # 팀페이지 만들기 버튼
     if action == "make":
         save_generated_team(team)
         return redirect(url_for("result"))
 
-    # 팀원 이름이 없으면 팀원 추가하지 않고 입력 페이지로 돌아감
+    # 이름 없으면 무시
     name = request.form.get("name", "").strip()
 
     if not name:
         save_generated_team(team)
         return redirect(url_for("input_page"))
 
-    # 팀원 최대 4명 제한
-    if len(team.get("members", [])) >= 4:
-        save_generated_team(team)
-        return redirect(url_for("input_page"))
-
     profile_image = request.files.get("profile_image")
 
-    new_id = team.get("next_member_id", 1000)
-    team["next_member_id"] = new_id + 1
-
+    # 공통 member_data
     member_data = {
-        "id": new_id,
         "name": name,
         "student_number": request.form.get("student_number", "").strip(),
         "major": request.form.get("major", "").strip(),
@@ -177,9 +180,35 @@ def update_member():
         "github": request.form.get("github", "").strip(),
         "sns": request.form.get("sns", "").strip(),
         "intro": request.form.get("intro", "").strip(),
-        "image": save_uploaded_file(profile_image, "images/default.png"),
         "portfolio": []
     }
+
+    # 수정 로직 (member_id 존재하면 수정)
+    if member_id:
+        for idx, member in enumerate(team.get("members", [])):
+            if int(member.get("id")) == member_id:
+                old_image = member.get("image", "images/default.png")
+
+                member_data["id"] = member_id
+                member_data["image"] = save_uploaded_file(profile_image, old_image)
+
+                team["members"][idx] = member_data
+                save_generated_team(team)
+
+                return redirect(url_for("member_detail", member_id=member_id))
+
+        abort(404)
+
+    # 새 팀원 추가
+    if len(team.get("members", [])) >= 4:
+        save_generated_team(team)
+        return redirect(url_for("input_page"))
+
+    new_id = team.get("next_member_id", 1000)
+    team["next_member_id"] = new_id + 1
+
+    member_data["id"] = new_id
+    member_data["image"] = save_uploaded_file(profile_image, "images/default.png")
 
     team["members"].append(member_data)
     save_generated_team(team)
