@@ -65,7 +65,7 @@
                     <div class="detail-buttons">
                         <a href="/" class="small-btn purple">목록으로</a>
 
-                        {% if member.editable %}
+                        {% if not is_root_member %}
                         <a href="/input?member_id={{ member.id }}" class="small-btn purple">수정</a>
                         {% endif %}
                     </div>
