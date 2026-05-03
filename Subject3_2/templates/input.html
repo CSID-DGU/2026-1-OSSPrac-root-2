@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>팀페이지 제작</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="page">
+
+    <header class="navbar">
+        <div class="nav-inner">
+            <div class="logo">OSSPrac</div>
+
+            <nav class="nav-menu">
+                <a href="/">Root팀 소개</a>
+                <a href="/community">커뮤니티</a>
+                <a href="{{ url_for('reset_team') }}" class="active">팀페이지 제작</a>
+                <a href="/contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="input-container">
+
+        <h1 class="input-title">
+            {% if member_count == 0 %}
+                팀 및 팀원 정보 입력
+            {% elif member_count < 4 %}
+                팀원 정보 입력
+            {% else %}
+                팀원 입력 완료
+            {% endif %}
+        </h1>
+
+        <form action="{{ url_for('update_member') }}" method="post" enctype="multipart/form-data">
+
+            {% if member_count == 0 %}
+            <section class="form-card">
+                <h2>팀 정보</h2>
+
+                <label>팀명</label>
+                <input type="text" name="team_name" placeholder="팀명을 입력하세요">
+
+                <label>팀 한 줄 소개</label>
+                <input type="text" name="team_intro" placeholder="팀 소개를 입력하세요">
+
+                <label>팀 대표 사진</label>
+                <div class="file-row">
+                    <input type="file" name="team_image">
+                </div>
+            </section>
+            {% endif %}
+
+            {% if member_count < 4 %}
+            <section class="form-card">
+                <h2>
+                    {% if member_count == 0 %}
+                        첫 번째 팀원 정보
+                    {% else %}
+                        {{ member_count + 1 }}번째 팀원 정보
+                    {% endif %}
+                </h2>
+
+                <div class="form-grid">
+                    <div>
+                        <label>이름</label>
+                        <input type="text" name="name">
+                    </div>
+
+                    <div>
+                        <label>학번</label>
+                        <input type="text" name="student_number">
+                    </div>
+
+                    <div>
+                        <label>전공</label>
+                        <input type="text" name="major">
+                    </div>
+
+                    <div>
+                        <label>핸드폰</label>
+                        <input type="text" name="phone">
+                    </div>
+
+                    <div>
+                        <label>이메일</label>
+                        <input type="email" name="email">
+                    </div>
+                </div>
+
+                <div class="option-area">
+                    <div>
+                        <label>성별</label>
+                        <div class="radio-row">
+                            <label><input type="radio" name="gender" value="남자"> 남자</label>
+                            <label><input type="radio" name="gender" value="여자"> 여자</label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label>역할</label>
+                        <div class="radio-row">
+                            <label><input type="radio" name="role" value="팀장"> 팀장</label>
+                            <label><input type="radio" name="role" value="팀원"> 팀원</label>
+                        </div>
+                    </div>
+                </div>
+
+                <label>프로그래밍 언어</label>
+                <div class="radio-row language-row">
+                    <label><input type="checkbox" name="languages" value="Python"> Python</label>
+                    <label><input type="checkbox" name="languages" value="Java"> Java</label>
+                    <label><input type="checkbox" name="languages" value="C/C++"> C/C++</label>
+                    <label><input type="checkbox" name="languages" value="HTML/CSS"> HTML/CSS</label>
+                    <label><input type="checkbox" name="languages" value="SQL"> SQL</label>
+                    <label class="etc-language">
+                        <input type="checkbox" name="languages" value="직접 입력">
+                        <input type="text" placeholder="직접 입력">
+                    </label>
+                </div>
+
+                <label>프로필 사진</label>
+                <div class="file-row">
+                    <input type="file" name="profile_image">
+                </div>
+            </section>
+            {% else %}
+            <section class="form-card">
+                <h2>팀원 입력 완료</h2>
+                <p style="color:#666; font-size:15px; line-height:1.7;">
+                    최대 4명의 팀원 정보가 모두 입력되었습니다.<br>
+                    제출하기 버튼을 눌러 결과 페이지로 이동하세요.
+                </p>
+            </section>
+            {% endif %}
+
+            <p style="text-align:right; font-size:13px; color:#666;">
+                현재 {{ member_count }} / 4명
+            </p>
+
+            <div class="form-buttons">
+                <button type="button" class="btn-light"
+                        onclick="location.href='{{ url_for('reset_team') }}'">
+                    처음부터
+                </button>
+
+                {% if member_count < 4 %}
+                <button type="submit" name="action" value="add" class="btn-outline">
+                    팀원 추가
+                </button>
+                {% else %}
+                <button type="button" class="btn-outline" disabled>
+                    최대 4명 완료
+                </button>
+                {% endif %}
+
+                <button type="submit" name="action" value="make" class="btn-purple">
+                    제출하기
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+</body>
+</html>

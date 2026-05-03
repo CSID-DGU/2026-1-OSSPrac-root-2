@@ -153,10 +153,6 @@ def update_member():
     action = request.form.get("action", "add")
     member_id = request.form.get("member_id", type=int)  # 수정 여부 판단용
 
-    # 팀페이지 만들기 버튼
-    if action == "make":
-        save_generated_team(team)
-        return redirect(url_for("result"))
 
     # 이름 없으면 무시
     name = request.form.get("name", "").strip()
@@ -213,8 +209,10 @@ def update_member():
     team["members"].append(member_data)
     save_generated_team(team)
 
-    return redirect(url_for("input_page"))
+    if action == "make":
+        return redirect(url_for("result"))
 
+    return redirect(url_for("input_page"))
 
 @app.route("/result")
 def result():
@@ -259,6 +257,10 @@ def contact():
         "contact.html",
         members=members
     )
+@app.route("/reset")
+def reset_team():
+    session.pop("generated_team", None)
+    return redirect(url_for("input_page"))
 
 if __name__ == "__main__":
     app.run(debug=True)

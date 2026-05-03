@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>팀원 상세 페이지</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="page">
+
+    <header class="navbar">
+        <div class="nav-inner">
+            <div class="logo">OSSPrac</div>
+
+            <nav class="nav-menu">
+                <a href="/" class="active">Root팀 소개</a>
+                <a href="/community">커뮤니티</a>
+                <a href="/input">팀페이지 제작</a>
+                <a href="/contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="detail-container">
+
+        <section class="profile-detail-card">
+            <div class="detail-top">
+                <div class="detail-photo">
+                    <img src="{{ url_for('static', filename=member.image) }}" alt="프로필 사진">
+                </div>
+
+                <div class="detail-info">
+                    <h1>{{ member.name }}</h1>
+
+                    <div class="info-row">
+                        <span>학과</span>
+                        <p>{{ member.department }}</p>
+                    </div>
+
+                    <div class="info-row">
+                        <span>학번</span>
+                        <p>{{ member.student_id }}</p>
+                    </div>
+
+                    <div class="info-row">
+                        <span>역할</span>
+                        <p>{{ member.role }}</p>
+                    </div>
+
+                    <div class="info-row">
+                        <span>언어</span>
+                        <p>{{ member.language }}</p>
+                    </div>
+
+                    <div class="info-row">
+                        <span>이메일</span>
+                        <p>{{ member.email }}</p>
+                    </div>
+
+                    <div class="info-row">
+                        <span>전화번호</span>
+                        <p>{{ member.phone }}</p>
+                    </div>
+
+                    <div class="detail-buttons">
+                        <a href="/" class="small-btn purple">목록으로</a>
+
+                        {% if member.editable %}
+                        <a href="/input?member_id={{ member.id }}" class="small-btn purple">수정</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="link-box-wrap">
+            <a href="{{ member.github }}" class="link-box" target="_blank">
+            <img src="{{ url_for('static', filename='images/github.png') }}" alt="GitHub" class="link-icon">
+            <strong>GitHub</strong>
+            </a>
+
+            <a href="{{ member.sns }}" class="link-box" target="_blank">
+            <img src="{{ url_for('static', filename='images/instagram.png') }}" alt="Instagram" class="link-icon">
+            <strong>Instagram</strong>
+            </a>
+        </section>
+
+        <section class="portfolio-section">
+            <h2>Portfolio</h2>
+
+            <table class="portfolio-table">
+                <thead>
+                    <tr>
+                        <th>프로젝트명</th>
+                        <th>기간</th>
+                        <th>역할</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in member.portfolio %}
+                    <tr>
+                        <td>{{ item.title }}</td>
+                        <td>{{ item.period }}</td>
+                        <td>{{ item.role }}</td>
+                        <td>{{ item.description }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+    </div>
+</div>
+</body>
+</html>
