@@ -26,7 +26,7 @@
         <section class="profile-detail-card">
             <div class="detail-top">
                 <div class="detail-photo">
-                    <img src="{{ member.image }}" alt="프로필 사진">
+                    <img src="{{ url_for('static', filename=member.image) }}" alt="프로필 사진">
                 </div>
 
                 <div class="detail-info">
@@ -74,14 +74,14 @@
         </section>
 
         <section class="link-box-wrap">
-            <a href="{{ member.github }}" class="link-box">
-                <strong>GitHub</strong>
-                <span>바로가기 링크</span>
+            <a href="{{ member.github }}" class="link-box" target="_blank">
+            <img src="{{ url_for('static', filename='images/github.png') }}" alt="GitHub" class="link-icon">
+            <strong>GitHub</strong>
             </a>
 
-            <a href="{{ member.sns }}" class="link-box">
-                <strong>SNS</strong>
-                <span>바로가기 링크</span>
+            <a href="{{ member.sns }}" class="link-box" target="_blank">
+            <img src="{{ url_for('static', filename='images/instagram.png') }}" alt="Instagram" class="link-icon">
+            <strong>Instagram</strong>
             </a>
         </section>
 

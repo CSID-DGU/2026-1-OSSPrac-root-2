@@ -15,7 +15,7 @@
             <nav class="nav-menu">
                 <a href="/">Root팀 소개</a>
                 <a href="/community">커뮤니티</a>
-                <a href="/input" class="active">팀페이지 제작</a>
+                <a href="{{ url_for('reset_team') }}" class="active">팀페이지 제작</a>
                 <a href="/contact">Contact</a>
             </nav>
         </div>
@@ -23,10 +23,19 @@
 
     <div class="input-container">
 
-        <h1 class="input-title">팀 프로필 정보 입력</h1>
+        <h1 class="input-title">
+            {% if member_count == 0 %}
+                팀 및 팀원 정보 입력
+            {% elif member_count < 4 %}
+                팀원 정보 입력
+            {% else %}
+                팀원 입력 완료
+            {% endif %}
+        </h1>
 
-        <form action="/result" method="get" enctype="multipart/form-data">
+        <form action="{{ url_for('update_member') }}" method="post" enctype="multipart/form-data">
 
+            {% if member_count == 0 %}
             <section class="form-card">
                 <h2>팀 정보</h2>
 
@@ -40,11 +49,18 @@
                 <div class="file-row">
                     <input type="file" name="team_image">
                 </div>
-
             </section>
+            {% endif %}
 
+            {% if member_count < 4 %}
             <section class="form-card">
-                <h2>팀원 정보</h2>
+                <h2>
+                    {% if member_count == 0 %}
+                        첫 번째 팀원 정보
+                    {% else %}
+                        {{ member_count + 1 }}번째 팀원 정보
+                    {% endif %}
+                </h2>
 
                 <div class="form-grid">
                     <div>
@@ -54,7 +70,7 @@
 
                     <div>
                         <label>학번</label>
-                        <input type="text" name="student_id">
+                        <input type="text" name="student_number">
                     </div>
 
                     <div>
@@ -93,66 +109,59 @@
 
                 <label>프로그래밍 언어</label>
                 <div class="radio-row language-row">
-                    <label><input type="radio" name="language" value="Python"> Python</label>
-                    <label><input type="radio" name="language" value="Java"> Java</label>
-                    <label><input type="radio" name="language" value="C/C++"> C/C++</label>
-                    <label><input type="radio" name="language" value="HTML/CSS"> C/C++</label>
-                    <label><input type="radio" name="language" value="SQL"> C/C++</label>
+                    <label><input type="checkbox" name="languages" value="Python"> Python</label>
+                    <label><input type="checkbox" name="languages" value="Java"> Java</label>
+                    <label><input type="checkbox" name="languages" value="C/C++"> C/C++</label>
+                    <label><input type="checkbox" name="languages" value="HTML/CSS"> HTML/CSS</label>
+                    <label><input type="checkbox" name="languages" value="SQL"> SQL</label>
                     <label class="etc-language">
-                        <input type="radio" name="language" value="etc" id="etc-radio">
-                        <input type="text" id="etc-input" placeholder="직접 입력"></label>
+                        <input type="checkbox" name="languages" value="직접 입력">
+                        <input type="text" placeholder="직접 입력">
+                    </label>
                 </div>
 
                 <label>프로필 사진</label>
                 <div class="file-row">
                     <input type="file" name="profile_image">
                 </div>
-
             </section>
+            {% else %}
+            <section class="form-card">
+                <h2>팀원 입력 완료</h2>
+                <p style="color:#666; font-size:15px; line-height:1.7;">
+                    최대 4명의 팀원 정보가 모두 입력되었습니다.<br>
+                    제출하기 버튼을 눌러 결과 페이지로 이동하세요.
+                </p>
+            </section>
+            {% endif %}
+
+            <p style="text-align:right; font-size:13px; color:#666;">
+                현재 {{ member_count }} / 4명
+            </p>
+
             <div class="form-buttons">
                 <button type="button" class="btn-light"
-                   onclick="location.href='{{ url_for('home') }}'">홈
+                        onclick="location.href='{{ url_for('reset_team') }}'">
+                    처음부터
                 </button>
-                <button type="button" class="btn-outline" onclick="addMember()">팀원 추가</button>
-                <button type="submit" class="btn-purple">제출하기</button>
+
+                {% if member_count < 4 %}
+                <button type="submit" name="action" value="add" class="btn-outline">
+                    팀원 추가
+                </button>
+                {% else %}
+                <button type="button" class="btn-outline" disabled>
+                    최대 4명 완료
+                </button>
+                {% endif %}
+
+                <button type="submit" name="action" value="make" class="btn-purple">
+                    제출하기
+                </button>
             </div>
 
         </form>
     </div>
 </div>
-<script>
-let memberCount = 0;
-
-function addMember() {
-    if (memberCount >= 4) {
-        alert("팀원은 최대 4명까지 추가할 수 있습니다.");
-        return;
-    }
-
-    memberCount++;
-
-    alert(memberCount + "번째 팀원이 추가되었습니다.");
-
-    if (memberCount === 4) {
-        document.querySelector(".btn-outline").disabled = true;
-        document.querySelector(".btn-outline").textContent = "최대 4명 추가 완료";
-    }
-
-    // 다음 팀원 입력할 수 있게 팀원 정보 입력칸만 비우기
-    const memberInputs = document.querySelectorAll(
-        '.form-card:nth-of-type(2) input'
-    );
-
-    memberInputs.forEach(input => {
-        if (input.type === "radio") {
-            input.checked = false;
-        } else if (input.type === "file") {
-            input.value = "";
-        } else {
-            input.value = "";
-        }
-    });
-}
-</script>
 </body>
 </html>
