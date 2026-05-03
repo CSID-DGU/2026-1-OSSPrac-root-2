@@ -188,9 +188,11 @@
                 </button>
                 {% endif %}
 
+                {% if not member %}
                 <button type="submit" name="action" value="make" class="btn-purple">
                     제출하기
                 </button>
+                {% endif %}
             </div>
 
         </form>
