@@ -1,2 +1,10 @@
-# 승현님 이 Subject3_1 폴더의 파이썬 파일과 html 파일에 팀과제3_1의 코드 작성해주시면 됩니다!
-# 작업 완료 시 이 주석은 삭제해주세요
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
+
+@app.route('/')
+def main():
+    return "서버 구동" 
+
+if __name__ == "__main__":
+    app.run(debug=True)
