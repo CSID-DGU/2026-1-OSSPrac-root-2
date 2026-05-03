@@ -637,3 +637,37 @@ body {
     white-space: normal;
     word-break: keep-all;
 }
+.portfolio-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.portfolio-form input,
+.portfolio-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 1px solid #ddd8ff;
+    border-radius: 10px;
+    background: #fbfaff;
+    font-size: 14px;
+}
+
+.portfolio-date-row {
+    display: grid;
+    grid-template-columns: 1fr 24px 1fr;
+    align-items: center;
+    gap: 8px;
+}
+
+.portfolio-date-row span {
+    text-align: center;
+    font-weight: 700;
+}
+
+.portfolio-form textarea {
+    height: 90px;
+    resize: none;
+}

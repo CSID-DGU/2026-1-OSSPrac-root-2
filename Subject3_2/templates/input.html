@@ -124,6 +124,26 @@
                 <div class="file-row">
                     <input type="file" name="profile_image">
                 </div>
+                <label>GitHub 아이디</label>
+                    <input type="text" name="github" placeholder="GitHub 아이디 입력">
+
+                <label>Instagram 아이디</label>
+                    <input type="text" name="sns" placeholder="Instagram 아이디 입력">
+                <label>포트폴리오</label>
+
+                <div class="portfolio-form">
+                    <input type="text" name="portfolio_title" placeholder="프로젝트명">
+
+                <div class="portfolio-date-row">
+                    <input type="date" name="portfolio_start_date">
+                    <span>~</span>
+                    <input type="date" name="portfolio_end_date">
+                </div>
+
+    <input type="text" name="portfolio_role" placeholder="역할">
+
+    <textarea name="portfolio_desc" placeholder="설명"></textarea>
+</div>
             </section>
             {% else %}
             <section class="form-card">

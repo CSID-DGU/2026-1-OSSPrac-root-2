@@ -162,7 +162,26 @@ def update_member():
         return redirect(url_for("input_page"))
 
     profile_image = request.files.get("profile_image")
+    portfolio_title = request.form.get("portfolio_title", "").strip()
+    portfolio_start = request.form.get("portfolio_start_date", "").strip()
+    portfolio_end = request.form.get("portfolio_end_date", "").strip()
+    portfolio_role = request.form.get("portfolio_role", "").strip()
+    portfolio_desc = request.form.get("portfolio_desc", "").strip()
 
+    portfolio = []
+    github_id = request.form.get("github", "").strip()
+    sns_id = request.form.get("sns", "").strip()
+
+    github_url = f"https://github.com/{github_id}" if github_id else ""
+    sns_url = f"https://instagram.com/{sns_id}" if sns_id else ""
+
+    if portfolio_title or portfolio_start or portfolio_end or portfolio_role or portfolio_desc:
+        portfolio.append({
+            "title": portfolio_title,
+            "period": f"{portfolio_start} ~ {portfolio_end}",
+            "role": portfolio_role,
+            "desc": portfolio_desc
+    })
     # 공통 member_data
     member_data = {
         "name": name,
@@ -173,10 +192,10 @@ def update_member():
         "gender": request.form.get("gender", "").strip(),
         "role": request.form.get("role", "").strip(),
         "languages": request.form.getlist("languages"),
-        "github": request.form.get("github", "").strip(),
-        "sns": request.form.get("sns", "").strip(),
+        "github": github_url,
+        "sns": sns_url,
         "intro": request.form.get("intro", "").strip(),
-        "portfolio": []
+        "portfolio": portfolio
     }
 
     # 수정 로직 (member_id 존재하면 수정)
