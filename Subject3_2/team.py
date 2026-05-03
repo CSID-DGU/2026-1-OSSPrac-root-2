@@ -157,6 +157,10 @@ def update_member():
     # 이름 없으면 무시
     name = request.form.get("name", "").strip()
 
+    if action == "make" and not member_id and not name:
+        save_generated_team(team)
+        return redirect(url_for("result"))
+
     if not name:
         save_generated_team(team)
         return redirect(url_for("input_page"))
