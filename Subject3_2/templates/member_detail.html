@@ -34,12 +34,12 @@
 
                     <div class="info-row">
                         <span>학과</span>
-                        <p>{{ member.department }}</p>
+                        <p>{{ member.major }}</p>
                     </div>
 
                     <div class="info-row">
                         <span>학번</span>
-                        <p>{{ member.student_id }}</p>
+                        <p>{{ member.student_number }}</p>
                     </div>
 
                     <div class="info-row">
@@ -49,7 +49,7 @@
 
                     <div class="info-row">
                         <span>언어</span>
-                        <p>{{ member.language }}</p>
+                        <p>{{ member.languages | join(', ') }}</p>
                     </div>
 
                     <div class="info-row">
@@ -75,13 +75,13 @@
 
         <section class="link-box-wrap">
             <a href="{{ member.github }}" class="link-box" target="_blank">
-            <img src="{{ url_for('static', filename='images/github.png') }}" alt="GitHub" class="link-icon">
-            <strong>GitHub</strong>
+                <img src="{{ url_for('static', filename='images/github.png') }}" class="link-icon">
+                <strong>GitHub</strong>
             </a>
 
             <a href="{{ member.sns }}" class="link-box" target="_blank">
-            <img src="{{ url_for('static', filename='images/instagram.png') }}" alt="Instagram" class="link-icon">
-            <strong>Instagram</strong>
+                <img src="{{ url_for('static', filename='images/instagram.png') }}" class="link-icon">
+                <strong>Instagram</strong>
             </a>
         </section>
 
@@ -103,7 +103,7 @@
                         <td>{{ item.title }}</td>
                         <td>{{ item.period }}</td>
                         <td>{{ item.role }}</td>
-                        <td>{{ item.description }}</td>
+                        <td>{{ item.desc }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
