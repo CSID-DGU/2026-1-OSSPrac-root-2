@@ -1,7 +1,9 @@
 from flask import Flask, render_template, redirect, url_for, session, abort
+from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 import os
 import json
+import uuid
 
 load_dotenv()
 
@@ -9,6 +11,11 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
 
 DATA_FILE = os.path.join(app.root_path, "data", "members.json")
+
+UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 def load_root_data():
     # members.json에서 ROOT 팀 전체 데이터를 불러오기
@@ -68,6 +75,28 @@ def get_generated_member_by_id(member_id):
 
     return None
 
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def save_uploaded_file(file, default_path):
+    if file is None or file.filename == "":
+        return default_path
+
+    if not allowed_file(file.filename):
+        return default_path
+
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
+    original_filename = secure_filename(file.filename)
+    ext = original_filename.rsplit(".", 1)[1].lower()
+    new_filename = f"{uuid.uuid4().hex}.{ext}"
+
+    save_path = os.path.join(app.config["UPLOAD_FOLDER"], new_filename)
+    file.save(save_path)
+
+    return f"uploads/{new_filename}"
+
 
 @app.route("/")
 def index():
@@ -102,12 +131,6 @@ def member_detail(member_id):
         )
 
     abort(404)
-
-#테스트용
-@app.route("/reset")
-def reset_generated_team():
-    session.pop("generated_team", None)
-    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":
