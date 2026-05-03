@@ -27,6 +27,17 @@ def load_root_members():
     data = load_root_data()
     return data.get("members", [])
 
+
+def get_root_member_by_id(member_id):
+    members = load_root_members()
+
+    for member in members:
+        if int(member.get("id")) == member_id:
+            return member
+
+    return None
+
+
 @app.route("/")
 def index():
     # ROOT 팀 소개 메인 페이지
@@ -37,6 +48,20 @@ def index():
         "index.html",
         team=team,
         members=members
+    )
+
+@app.route("/members/<int:member_id>")
+def member_detail(member_id):
+    # 팀원 상세조회 페이지
+    member = get_root_member_by_id(member_id)
+
+    if member is None:
+        return "존재하지 않는 팀원입니다.", 404
+
+    return render_template(
+        "member_detail.html",
+        member=member,
+        is_root_member=True
     )
 
 
