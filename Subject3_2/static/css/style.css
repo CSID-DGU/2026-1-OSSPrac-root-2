@@ -1,1 +1,498 @@
-/* css 파일명과 파일 경로(css 폴더 유무 등) 등은 승현님이 자율적으로 해주시면 됩니다! */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f3f5fb;
+    display: flex;
+    justify-content: center;
+    padding: 24px 0;
+}
+
+/* 전체를 하나의 카드처럼 */
+.page {
+    width: 600px;
+    min-height: 800px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    overflow: hidden;
+}
+
+/* 네비게이션 */
+.navbar {
+    padding: 0 24px;         
+    height: 60px;             
+    display: flex;
+    align-items: center;      
+    background: white;
+    border-bottom: 1px solid #eee;
+}
+
+.nav-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.logo {
+    font-weight: 800;
+    font-size: 18px;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 22px;
+}
+
+.nav-menu a {
+    text-decoration: none;
+    color: #555;
+    font-size: 13px;
+    font-weight: 600;
+
+    height: 60px;             
+    display: flex;
+    align-items: center;    
+}
+
+.nav-menu a.active {
+    color: #6c63ff;
+    border-bottom: 3px solid #6c63ff;
+}
+
+/* 메인 */
+.container {
+    padding: 22px;
+}
+
+.card {
+    background: white;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 32px;
+}
+
+/* 팀 이미지 영역 */
+.team-image {
+    height: 360px;
+    border-radius: 12px 12px 0 0;
+
+    background-image: url("/static/images/root-team.png");
+    background-size: cover;
+    background-position: center center;
+}
+
+/* 팀 소개 텍스트 */
+.team-card {
+    text-align: center;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+.team-card h2 {
+    margin: 24px 0 6px;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.team-card p {
+    width: 75%;
+    margin: 0 auto 28px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.7;
+    color: #222;
+    text-align: center;
+}
+.team-desc {
+    width: 80%;
+    margin: 0 auto 28px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.7;
+    color: #222;
+    text-align: center;
+    word-break: keep-all;
+}
+
+/* 팀원 소개 */
+.member-card h3 {
+    font-size: 18px;
+    margin-bottom: 24px;
+}
+/* 팀원 영역 */
+.members {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 360px;
+    margin: 20px auto 0;
+    gap: 18px 48px;
+}
+
+/* 첫 번째 팀원만 위 가운데 */
+.member:nth-child(1) {
+    grid-column: 1 / 3;
+    justify-self: center;
+}
+
+/* 아래 두 명 */
+.member:nth-child(2),
+.member:nth-child(3) {
+    justify-self: center;
+}
+
+.member {
+    width: 120px;
+    text-align: center;
+    text-decoration: none;
+    color: #222;
+    transition: 0.2s;
+}
+
+.member .profile {
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    background: #ddd;
+    margin: 0 auto 10px;
+}
+
+.member p {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+    color: #222;
+}
+
+.member:hover {
+    transform: translateY(-4px);
+}
+
+/* 팀원 상세 페이지 */
+.detail-container {
+    padding: 28px;
+}
+
+.profile-detail-card {
+    border: 1px solid #eee;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+.detail-top {
+    display: flex;
+    gap: 36px;
+    align-items: center;
+}
+
+.detail-photo img {
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #ddd;
+}
+
+.detail-info {
+    flex: 1;
+}
+
+.detail-info h1 {
+    margin: 0 0 18px;
+    font-size: 30px;
+}
+
+.info-row {
+    display: flex;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.info-row span {
+    width: 80px;
+    font-weight: 700;
+    color: #555;
+}
+
+.info-row p {
+    margin: 0;
+    color: #222;
+}
+
+.detail-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.small-btn {
+    padding: 9px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.small-btn.gray {
+    background: #f1f1f5;
+    color: #333;
+}
+
+.small-btn.purple {
+    background: #6c63ff;
+    color: white;
+}
+
+.link-box-wrap {
+    display: flex;
+    gap: 24px;
+    margin: 26px 0;
+}
+
+.link-box {
+    flex: 1;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    text-decoration: none;
+    color: #222;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+.link-box strong {
+    display: block;
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.link-box span {
+    font-size: 13px;
+    color: #666;
+}
+
+.portfolio-section {
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.portfolio-section h2 {
+    font-size: 22px;
+    margin-bottom: 14px;
+}
+
+.portfolio-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.portfolio-table th,
+.portfolio-table td {
+    border-bottom: 1px solid #eee;
+    padding: 12px 8px;
+    text-align: center;
+}
+
+.portfolio-table th {
+    background: #f6f4ff;
+    color: #333;
+}
+/* 팀페이지 제작 */
+.input-container {
+    padding: 28px;
+}
+
+.input-title {
+    text-align: center;
+    font-size: 28px;
+    margin: 22px 0 26px;
+}
+
+.form-card {
+    border: 1px solid #eee;
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+}
+
+.form-card h2 {
+    margin: 0 0 20px;
+    font-size: 20px;
+}
+
+.form-card label {
+    display: block;
+    font-weight: 700;
+    font-size: 14px;
+    margin: 14px 0 7px;
+}
+
+.form-card input[type="text"],
+.form-card input[type="email"],
+.form-card textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    border: 1px solid #ddd;
+    border-radius: 9px;
+    font-size: 14px;
+    outline: none;
+}
+
+.form-card input:focus {
+    border-color: #6c63ff;
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.12);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 22px;
+}
+
+.option-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    margin-top: 8px;
+}
+
+.radio-row {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.radio-row label {
+    margin: 0;
+    font-weight: 500;
+}
+
+.language-row input[type="text"] {
+    width: 120px;
+    padding: 8px;
+}
+
+.file-row {
+    padding: 12px;
+    background: #f7f6ff;
+    border: 1px dashed #b8b2ff;
+    border-radius: 10px;
+}
+
+.ai-box {
+    margin-top: 14px;
+    padding: 18px;
+    border-radius: 12px;
+    background: #f7f6ff;
+    color: #555;
+    font-size: 14px;
+    line-height: 1.6;
+}
+.ai-box textarea {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    resize: none;
+    height: 80px;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.form-buttons button {
+    border: none;
+    padding: 10px 16px;
+    border-radius: 9px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-light {
+    background: #f1f1f5;
+    color: #333;
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #6c63ff !important;
+    color: #6c63ff;
+}
+
+.btn-purple {
+    background: #6c63ff;
+    color: white;
+}
+.etc-language {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.etc-language input[type="text"] {
+    width: 110px;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+/* input 페이지 분위기 강화 */
+.input-container {
+    background:
+        radial-gradient(circle at top right, rgba(108, 99, 255, 0.13), transparent 260px),
+        radial-gradient(circle at bottom left, rgba(108, 99, 255, 0.10), transparent 260px);
+}
+
+.form-card {
+    background: linear-gradient(180deg, #ffffff 0%, #fbfaff 100%);
+    border: 1px solid #e8e5ff;
+}
+
+.form-card h2 {
+    display: inline-block;
+    background: #f1efff;
+    color: #4f46e5;
+    padding: 8px 16px;
+    border-radius: 999px;
+    margin-bottom: 22px;
+}
+
+.form-card input[type="text"],
+.form-card input[type="email"] {
+    background: #fbfaff;
+    border: 1px solid #ddd8ff;
+}
+
+.form-card input[type="text"]:focus,
+.form-card input[type="email"]:focus {
+    border-color: #6c63ff;
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
+}
+
+.file-row {
+    background: #f3f0ff;
+    border: 1px dashed #8b80ff;
+}
+
+.radio-row label {
+    background: #f5f3ff;
+    padding: 7px 12px;
+    border-radius: 999px;
+}
+
+.radio-row input {
+    accent-color: #6c63ff;
+}
