@@ -1,60 +1,108 @@
 {
+    "team": {
+        "name": "TEAM ROOT",
+        "intro": "ROOT팀은 오픈소스소프트웨어 실습을 함께 진행하며 Flask 기반 팀 소개 웹페이지를 개발하는 프로젝트 팀입니다.",
+        "image": "images/root-team.png"
+    },
     "members": [
         {
             "id": 1,
             "name": "오승현",
-            "student_number": "2024110423",
-            "major": "교육학과",
-            "phone": "010-1111-2222",
+            "student_number": "2024111111",
+            "major": "컴퓨터공학과",
+            "phone": "010-1111-1111",
             "email": "seunghyun@example.com",
             "gender": "여성",
             "role": "팀장",
             "languages": [
-                "Java"
+                "Python",
+                "Flask",
+                "Git"
             ],
-            "image": "images/root-member1.png",
             "github": "https://github.com/example1",
             "sns": "https://instagram.com/example1",
-            "intro": "ROOT 팀장을 맡고 있습니다.",
-            "portfolio": []
+            "intro": "팀의 전체 구조를 설계하고 Flask 기반 백엔드 개발을 담당합니다.",
+            "image": "images/root-member1.png",
+            "portfolio": [
+                {
+                    "project_name": "ROOT 팀 소개 웹페이지",
+                    "period": "2026.05 ~ 2026.06",
+                    "role": "팀장",
+                    "description": "팀 소개 메인 페이지와 팀원 상세조회 기능을 설계하고 구현했습니다."
+                },
+                {
+                    "project_name": "OSS 협업 실습",
+                    "period": "2026.04 ~ 2026.05",
+                    "role": "팀장",
+                    "description": "Git 협업 흐름과 브랜치 전략을 관리하며 팀 프로젝트를 진행했습니다."
+                }
+            ]
         },
         {
             "id": 2,
             "name": "김유미",
-            "student_number": "2024110000",
+            "student_number": "2024222222",
             "major": "산업시스템공학과",
-            "phone": "010-2222-3333",
+            "phone": "010-2222-2222",
             "email": "yumi@example.com",
             "gender": "여성",
-            "role": "백엔드",
+            "role": "팀원",
             "languages": [
                 "Python",
-                "Flask"
+                "Flask",
+                "Django"
             ],
-            "image": "images/root-member2.png",
             "github": "https://github.com/yumiykim",
             "sns": "https://instagram.com/example2",
-            "intro": "백엔드 개발을 담당합니다.",
-            "portfolio": []
+            "intro": "데이터 처리와 서버 로직 구현을 담당하며 안정적인 기능 구현에 집중합니다.",
+            "image": "images/root-member2.png",
+            "portfolio": [
+                {
+                    "project_name": "팀페이지 생성 기능",
+                    "period": "2026.05 ~ 2026.06",
+                    "role": "팀원",
+                    "description": "session 기반으로 팀 정보와 팀원 정보를 저장하고 결과 페이지를 출력하는 기능을 구현했습니다."
+                },
+                {
+                    "project_name": "이미지 업로드 처리",
+                    "period": "2026.05 ~ 2026.06",
+                    "role": "팀원",
+                    "description": "사용자가 업로드한 프로필 이미지와 팀 대표 이미지를 서버에 저장하는 기능을 구현했습니다."
+                }
+            ]
         },
         {
             "id": 3,
             "name": "오지윤",
-            "student_number": "2024111111",
-            "major": "컴퓨터공학과",
-            "phone": "010-4444-5555",
-            "email": "jiyoon@example.com",
+            "student_number": "2024333333",
+            "major": "소프트웨어학과",
+            "phone": "010-3333-3333",
+            "email": "juwon@example.com",
             "gender": "여성",
-            "role": "프론트엔드",
+            "role": "팀원",
             "languages": [
                 "HTML",
                 "CSS",
                 "JavaScript"
             ],
-            "image": "images/root-member3.png",
             "github": "https://github.com/example3",
             "sns": "https://instagram.com/example3",
-            "intro": "프론트엔드 개발을 담당합니다.",
-            "portfolio": []
+            "intro": "와이어프레임을 기반으로 사용자 인터페이스를 구현하고 화면 구성을 담당합니다.",
+            "image": "images/root-member3.png",
+            "portfolio": [
+                {
+                    "project_name": "팀 소개 페이지 UI",
+                    "period": "2026.05 ~ 2026.06",
+                    "role": "팀원",
+                    "description": "팀 소개 메인 페이지와 카드 UI를 구현했습니다."
+                },
+                {
+                    "project_name": "팀원 상세 페이지 UI",
+                    "period": "2026.05 ~ 2026.06",
+                    "role": "팀원",
+                    "description": "팀원 상세 정보와 포트폴리오를 표시하는 화면을 구성했습니다."
+                }
+            ]
         }
     ]
+}
