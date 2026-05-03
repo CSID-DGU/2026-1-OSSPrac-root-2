@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, session, abort
+from flask import Flask, render_template, redirect, url_for, session, abort, request
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 import os
@@ -109,6 +109,95 @@ def index():
         team=team,
         members=members
     )
+
+@app.route("/input")
+def input_page():
+    # 팀페이지 제작 페이지
+    team = get_generated_team()
+
+    return render_template(
+        "input.html",
+        team=team,
+        member=None,
+        member_count=len(team.get("members", []))
+    )
+
+
+@app.route("/member/update", methods=["POST"])
+def update_member():
+    """
+    팀 정보 저장, 팀원 추가, 팀페이지 만들기 요청을 처리한다.
+    """
+    team = get_generated_team()
+
+    # 팀 정보 저장
+    team["team_name"] = request.form.get("team_name", team.get("team_name", "")).strip()
+    team["team_intro"] = request.form.get("team_intro", team.get("team_intro", "")).strip()
+
+    team_image = request.files.get("team_image")
+    team["team_image"] = save_uploaded_file(
+        team_image,
+        team.get("team_image", "images/default-team.png")
+    )
+
+    action = request.form.get("action", "add")
+
+    # 팀페이지 만들기 버튼을 누른 경우
+    if action == "make":
+        save_generated_team(team)
+        return redirect(url_for("result"))
+
+    # 팀원 이름이 없으면 팀원 추가하지 않고 입력 페이지로 돌아감
+    name = request.form.get("name", "").strip()
+
+    if not name:
+        save_generated_team(team)
+        return redirect(url_for("input_page"))
+
+    # 팀원 최대 4명 제한
+    if len(team.get("members", [])) >= 4:
+        save_generated_team(team)
+        return redirect(url_for("input_page"))
+
+    profile_image = request.files.get("profile_image")
+
+    new_id = team.get("next_member_id", 1000)
+    team["next_member_id"] = new_id + 1
+
+    member_data = {
+        "id": new_id,
+        "name": name,
+        "student_number": request.form.get("student_number", "").strip(),
+        "major": request.form.get("major", "").strip(),
+        "phone": request.form.get("phone", "").strip(),
+        "email": request.form.get("email", "").strip(),
+        "gender": request.form.get("gender", "").strip(),
+        "role": request.form.get("role", "").strip(),
+        "languages": request.form.getlist("languages"),
+        "github": request.form.get("github", "").strip(),
+        "sns": request.form.get("sns", "").strip(),
+        "intro": request.form.get("intro", "").strip(),
+        "image": save_uploaded_file(profile_image, "images/default.png"),
+        "portfolio": []
+    }
+
+    team["members"].append(member_data)
+    save_generated_team(team)
+
+    return redirect(url_for("input_page"))
+
+
+@app.route("/result")
+def result():
+    # 생성된 팀페이지 결과 화면
+    team = get_generated_team()
+
+    return render_template(
+        "result.html",
+        team=team,
+        members=team.get("members", [])
+    )
+
 
 @app.route("/members/<int:member_id>")
 def member_detail(member_id):
