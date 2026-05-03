@@ -252,3 +252,7 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,windows,macos
+
+# 사용자 업로드 파일들
+Subject3_2/static/uploads/*
+!Subject3_2/static/uploads/.gitkeep
