@@ -250,6 +250,15 @@ def member_detail(member_id):
 
     abort(404)
 
+@app.route("/contact")
+def contact():
+    # 비상연락망 페이지
+    members = load_root_members()
+
+    return render_template(
+        "contact.html",
+        members=members
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)
