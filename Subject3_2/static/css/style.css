@@ -702,6 +702,55 @@ body {
     flex-direction: column;
     gap: 12px;
     margin-top: 10px;
+    padding: 16px;
+    border: 1px solid #e8e5ff;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.portfolio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.portfolio-form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.portfolio-form-header strong {
+    font-size: 14px;
+    color: #4f46e5;
+}
+
+.portfolio-add-btn,
+.portfolio-remove-btn {
+    border: 1px solid #6c63ff;
+    border-radius: 9px;
+    background: white;
+    color: #6c63ff;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.portfolio-add-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 11px 14px;
+}
+
+.portfolio-remove-btn {
+    padding: 7px 10px;
+    font-size: 12px;
+}
+
+.portfolio-remove-btn:disabled {
+    border-color: #ddd;
+    color: #aaa;
+    cursor: default;
 }
 
 .portfolio-form input,

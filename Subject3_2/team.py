@@ -176,26 +176,40 @@ def update_member():
         return redirect(url_for("input_page"))
 
     profile_image = request.files.get("profile_image")
-    portfolio_title = request.form.get("portfolio_title", "").strip()
-    portfolio_start = request.form.get("portfolio_start_date", "").strip()
-    portfolio_end = request.form.get("portfolio_end_date", "").strip()
-    portfolio_role = request.form.get("portfolio_role", "").strip()
-    portfolio_desc = request.form.get("portfolio_desc", "").strip()
-
-    portfolio = []
     github_id = request.form.get("github", "").strip()
     sns_id = request.form.get("sns", "").strip()
 
     github_url = f"https://github.com/{github_id}" if github_id else ""
     sns_url = f"https://instagram.com/{sns_id}" if sns_id else ""
 
-    if portfolio_title or portfolio_start or portfolio_end or portfolio_role or portfolio_desc:
-        portfolio.append({
-            "title": portfolio_title,
-            "period": f"{portfolio_start} ~ {portfolio_end}",
-            "role": portfolio_role,
-            "desc": portfolio_desc
-    })
+    portfolio = []
+    portfolio_titles = request.form.getlist("portfolio_title")
+    portfolio_starts = request.form.getlist("portfolio_start_date")
+    portfolio_ends = request.form.getlist("portfolio_end_date")
+    portfolio_roles = request.form.getlist("portfolio_role")
+    portfolio_descs = request.form.getlist("portfolio_desc")
+
+    for title, start, end, role, desc in zip(
+        portfolio_titles,
+        portfolio_starts,
+        portfolio_ends,
+        portfolio_roles,
+        portfolio_descs
+    ):
+        title = title.strip()
+        start = start.strip()
+        end = end.strip()
+        role = role.strip()
+        desc = desc.strip()
+
+        if title or start or end or role or desc:
+            portfolio.append({
+                "title": title,
+                "period": f"{start} ~ {end}",
+                "role": role,
+                "desc": desc
+            })
+
     languages = request.form.getlist("languages")
 
     language_etc = request.form.get("language_etc", "").strip()
