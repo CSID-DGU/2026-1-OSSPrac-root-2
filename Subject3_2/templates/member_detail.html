@@ -63,7 +63,11 @@
                     </div>
 
                     <div class="detail-buttons">
+                        {% if is_root_member %}
                         <a href="/" class="small-btn purple">목록으로</a>
+                        {% else %}
+                        <a href="{{ url_for('result') }}" class="small-btn purple">목록으로</a>
+                        {% endif %}
 
                         {% if not is_root_member %}
                         <a href="/input?member_id={{ member.id }}" class="small-btn purple">수정</a>
