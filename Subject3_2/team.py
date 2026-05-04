@@ -186,6 +186,15 @@ def update_member():
             "role": portfolio_role,
             "desc": portfolio_desc
     })
+    languages = request.form.getlist("languages")
+
+    languages = [lang for lang in languages if lang != "직접 입력"]
+
+    language_etc = request.form.get("language_etc", "").strip()
+
+    if language_etc:
+        languages.append(language_etc)
+
     # 공통 member_data
     member_data = {
         "name": name,
@@ -195,7 +204,7 @@ def update_member():
         "email": request.form.get("email", "").strip(),
         "gender": request.form.get("gender", "").strip(),
         "role": request.form.get("role", "").strip(),
-        "languages": request.form.getlist("languages"),
+        "languages": languages,
         "github": github_url,
         "sns": sns_url,
         "intro": request.form.get("intro", "").strip(),
