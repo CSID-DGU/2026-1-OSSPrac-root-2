@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Input Page</title>
+</head>
+<body>
+    <form action="/result" method="POST">
+        <p>Name <input type='text' name='name'></p> 
+        
+        <p>Student Number <input type='text' name='student_number'></p>
+        
+        <p>Gender </p>
+        <div class="vertical-group">
+            <label><input type="radio" name="gender" value="Male"> Male</label>
+            <label><input type="radio" name="gender" value="Female"> Female</label>
+        </div>
+
+        <p>Major <input type='text' name='major'></p>
+
+        <p>Programming Languages </p>
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="languages" value="Python"> Python</label>
+            <label><input type="checkbox" name="languages" value="Java"> Java</label>
+            <label><input type="checkbox" name="languages" value="HTML"> HTML</label>
+            <label><input type="checkbox" name="languages" value="C++"> C++</label>
+        </div>
+        
+        <br>
+        <button type='submit'>submit</button>
+    </form>
+</body>
+</html>
