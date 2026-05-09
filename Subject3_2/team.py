@@ -362,5 +362,12 @@ def board_list():
     posts = get_posts() 
     return render_template('board.html', posts=posts)
 
+@app.route('/board/write', methods=['GET', 'POST'])
+def board_write():
+    if request.method == 'POST':
+        pass 
+    else:
+        return render_template('write.html')
+
 if __name__ == "__main__":
     app.run(debug=True)
