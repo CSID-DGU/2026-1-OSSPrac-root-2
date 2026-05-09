@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>임시 게시판</title>
+</head>
+<body>
+    <h1>여기는 임시 게시판 목록입니다</h1>
+    
+    <!-- 파이썬에서 넘겨준 posts 데이터를 화면에 찍어보는 곳 -->
+    <ul>
+        {% for post in posts %}
+            <li>제목: {{ post.title }} / 작성자: {{ post.author }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
