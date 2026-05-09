@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, session, abort, request
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
+from datetime import datetime
 import os
 import json
 import uuid
@@ -365,7 +366,41 @@ def board_list():
 @app.route('/board/write', methods=['GET', 'POST'])
 def board_write():
     if request.method == 'POST':
-        pass 
+        # 1. 데이터 가져오기 및 공백 제거
+        title = request.form.get('title', '').strip()
+        author = request.form.get('author', '').strip()
+        password = request.form.get('password', '').strip()
+        content = request.form.get('content', '').strip()
+
+        # 2. 필수 항목 누락 체크 (하나라도 비어있으면 에러)
+        if not title or not author or not password or not content:
+            # 나중에는 '알림창'을 띄우겠지만, 일단은 명확하게 에러 메시지를 보여줍니다.
+            return "오류: 모든 항목을 입력해야 합니다. (제목, 작성자, 비밀번호, 내용)", 400
+        if not (password.isdigit() and len(password) == 4):
+            return "오류: 비밀번호는 숫자 4자리여야 합니다.", 400
+
+        # 3. 기존 게시글 목록 읽어오기
+        with open('data/posts.json', 'r', encoding='utf-8') as f:
+            posts = json.load(f)
+
+        # 4. 새로운 게시글 객체 생성 (ID 부여 및 날짜 포함)
+        new_id = posts[-1]['id'] + 1 if posts else 1
+        new_post = {
+            "id": new_id,
+            "title": title,
+            "author": author,
+            "password": password,
+            "content": content,
+            "date": datetime.now().strftime("%Y.%m.%d")
+        }
+
+        # 5. 저장 및 리다이렉트
+        posts.append(new_post)
+        with open('data/posts.json', 'w', encoding='utf-8') as f:
+            json.dump(posts, f, indent=2, ensure_ascii=False)
+
+        return redirect('/board')
+    
     else:
         return render_template('write.html')
 
