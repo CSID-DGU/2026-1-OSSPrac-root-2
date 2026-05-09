@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>글쓰기</title>
+</head>
+<body>
+    <h1>새 글 쓰기</h1>
+    
+    <!-- 사용자가 입력한 데이터를 서버로 쏴주는(POST) 폼입니다 -->
+    <form action="/board/write" method="POST">
+        <p>제목: <input type="text" name="title" required></p>
+        <p>작성자: <input type="text" name="author" required></p>
+        <p>비밀번호(숫자4자리): <input type="password" name="password" maxlength="4" required></p>
+        <p>내용:<br><textarea name="content" rows="5" cols="40" required></textarea></p>
+        
+        <button type="submit">등록하기</button>
+    </form>
+</body>
+</html>
