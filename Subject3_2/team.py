@@ -353,5 +353,14 @@ def reset_team():
     session.pop("generated_team", None)
     return redirect(url_for("input_page"))
 
+def get_posts():
+    with open('data/posts.json', 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+@app.route('/board')
+def board_list():
+    posts = get_posts() 
+    return render_template('board.html', posts=posts)
+
 if __name__ == "__main__":
     app.run(debug=True)
