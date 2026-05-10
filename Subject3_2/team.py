@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, url_for, session, abort, req
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from datetime import datetime
+from io import BytesIO
 import os
 import json
 import uuid
@@ -12,6 +13,11 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
 
 DATA_FILE = os.path.join(app.root_path, "data", "members.json")
+BOARD_RUNTIME_DIR = os.path.join(app.instance_path, "board")
+POSTS_SEED_FILE = os.path.join(app.root_path, "data", "posts.json")
+COMMENTS_SEED_FILE = os.path.join(app.root_path, "data", "comments.json")
+POSTS_RUNTIME_FILE = os.path.join(BOARD_RUNTIME_DIR, "posts.json")
+COMMENTS_RUNTIME_FILE = os.path.join(BOARD_RUNTIME_DIR, "comments.json")
 
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
@@ -20,6 +26,7 @@ ALLOWED_PORTFOLIO_EXTENSIONS = {
     "png", "jpg", "jpeg", "gif", "webp"
 }
 PREDEFINED_LANGUAGES = {"Python", "Java", "C/C++", "HTML/CSS", "SQL"}
+GEMINI_IMAGE_MODEL = os.getenv("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -124,6 +131,85 @@ def save_uploaded_asset(file, default_path="", default_name="", subfolder="", al
     return upload_path, file.filename
 
 
+def build_image_prompt(image_type, user_prompt, team=None, member=None):
+    base_style = (
+        "Create a polished, friendly image for a personal introduction website. "
+        "No readable text, no letters, no numbers, no captions, no watermark-like logo. "
+        "Clean composition, modern but warm, cute and approachable."
+    )
+
+    if image_type == "team":
+        return (
+            f"{base_style} Make a representative square team image, 1:1 aspect ratio. "
+            f"Team name: {team.get('team_name', '') if team else ''}. "
+            f"Team intro: {team.get('team_intro', '') if team else ''}. "
+            f"The user request may be written in Korean; interpret it naturally. "
+            f"User request: {user_prompt}"
+        )
+
+    return (
+        f"{base_style} Make a square cute animated avatar portrait in an iPhone "
+        f"Memoji-inspired 3D cartoon style. Not photorealistic, not an ID photo, "
+        f"adult person only, rounded face, expressive eyes, soft lighting, simple background. "
+        f"Do not include name, major, role, programming languages, or any other text information "
+        f"inside the image. "
+        f"The user request may be written in Korean; interpret it naturally. "
+        f"User request: {user_prompt}"
+    )
+
+
+def generate_gemini_image(prompt, subfolder="ai", aspect_ratio="1:1"):
+    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        return None
+
+    try:
+        from google import genai
+        from google.genai import errors
+        from google.genai import types
+        from PIL import Image
+    except ImportError:
+        return None
+
+    client = genai.Client(api_key=api_key)
+    try:
+        response = client.models.generate_content(
+            model=GEMINI_IMAGE_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_modalities=["IMAGE"],
+                image_config=types.ImageConfig(aspect_ratio=aspect_ratio)
+            )
+        )
+    except errors.APIError:
+        return None
+
+    if not response.candidates:
+        return None
+
+    content = response.candidates[0].content
+    if not content or not getattr(content, "parts", None):
+        return None
+
+    for part in content.parts:
+        if not getattr(part, "inline_data", None):
+            continue
+
+        image_bytes = part.inline_data.data
+        image = Image.open(BytesIO(image_bytes))
+
+        upload_folder = os.path.join(app.config["UPLOAD_FOLDER"], subfolder)
+        os.makedirs(upload_folder, exist_ok=True)
+
+        filename = f"{uuid.uuid4().hex}.png"
+        save_path = os.path.join(upload_folder, filename)
+        image.save(save_path, format="PNG")
+
+        return f"uploads/{subfolder}/{filename}"
+
+    return None
+
+
 @app.route("/")
 def index():
     # ROOT 팀 소개 메인 페이지
@@ -180,10 +266,19 @@ def update_member():
     team["team_intro"] = request.form.get("team_intro", team.get("team_intro", "")).strip()
 
     team_image = request.files.get("team_image")
-    team["team_image"] = save_uploaded_file(
-        team_image,
-        team.get("team_image", "images/default-team.png")
-    )
+    team_prompt = request.form.get("team_prompt", "").strip()
+    old_team_image = team.get("team_image", "images/default-team.png")
+
+    if team_image and team_image.filename:
+        team["team_image"] = save_uploaded_file(team_image, old_team_image)
+    elif team_prompt:
+        team["team_image"] = generate_gemini_image(
+            build_image_prompt("team", team_prompt, team=team),
+            subfolder="ai/team",
+            aspect_ratio="1:1"
+        ) or old_team_image
+    else:
+        team["team_image"] = old_team_image
 
     action = request.form.get("action", "add")
     member_id = request.form.get("member_id", type=int)  # 수정 여부 판단용
@@ -200,7 +295,8 @@ def update_member():
         save_generated_team(team)
         return redirect(url_for("input_page"))
 
-    profile_image = request.files.get("profile_image")
+    profile_image = request.files.get("profile_image") or request.files.get("image")
+    profile_ai_prompt = request.form.get("profile_ai_prompt", "").strip()
     github_id = request.form.get("github", "").strip()
     sns_id = request.form.get("sns", "").strip()
 
@@ -278,7 +374,16 @@ def update_member():
                 old_image = member.get("image", "images/default.png")
 
                 member_data["id"] = member_id
-                member_data["image"] = save_uploaded_file(profile_image, old_image)
+                if profile_image and profile_image.filename:
+                    member_data["image"] = save_uploaded_file(profile_image, old_image)
+                elif profile_ai_prompt:
+                    member_data["image"] = generate_gemini_image(
+                        build_image_prompt("profile", profile_ai_prompt, team=team, member=member_data),
+                        subfolder="ai/profile",
+                        aspect_ratio="1:1"
+                    ) or old_image
+                else:
+                    member_data["image"] = old_image
 
                 team["members"][idx] = member_data
                 save_generated_team(team)
@@ -296,7 +401,16 @@ def update_member():
     team["next_member_id"] = new_id + 1
 
     member_data["id"] = new_id
-    member_data["image"] = save_uploaded_file(profile_image, "images/default.png")
+    if profile_image and profile_image.filename:
+        member_data["image"] = save_uploaded_file(profile_image, "images/default.png")
+    elif profile_ai_prompt:
+        member_data["image"] = generate_gemini_image(
+            build_image_prompt("profile", profile_ai_prompt, team=team, member=member_data),
+            subfolder="ai/profile",
+            aspect_ratio="1:1"
+        ) or "images/default.png"
+    else:
+        member_data["image"] = "images/default.png"
 
     team["members"].append(member_data)
     save_generated_team(team)
@@ -356,9 +470,43 @@ def reset_team():
 
 # 게시글 CRUD =====================================================================
 
+def read_json_file(path, default=None):
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return [] if default is None else default
+
+
+def write_json_file(path, data):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def ensure_board_runtime_file(runtime_path, seed_path):
+    if os.path.exists(runtime_path):
+        return
+
+    write_json_file(runtime_path, read_json_file(seed_path, []))
+
+
 def get_posts():
-    with open('data/posts.json', 'r', encoding='utf-8') as f:
-        return json.load(f)
+    ensure_board_runtime_file(POSTS_RUNTIME_FILE, POSTS_SEED_FILE)
+    return read_json_file(POSTS_RUNTIME_FILE, [])
+
+
+def save_posts(posts):
+    write_json_file(POSTS_RUNTIME_FILE, posts)
+
+
+def get_comments():
+    ensure_board_runtime_file(COMMENTS_RUNTIME_FILE, COMMENTS_SEED_FILE)
+    return read_json_file(COMMENTS_RUNTIME_FILE, [])
+
+
+def save_comments(comments):
+    write_json_file(COMMENTS_RUNTIME_FILE, comments)
 
 @app.route('/board')
 def board_list():
@@ -372,8 +520,7 @@ def board_write():
 
 @app.route('/board/<int:post_id>')
 def board_detail(post_id):
-    with open('data/posts.json', 'r', encoding='utf-8') as f:
-        posts = json.load(f)
+    posts = get_posts()
     
     post = next((p for p in posts if p['id'] == post_id), None)
     if not post: abort(404)
@@ -382,11 +529,7 @@ def board_detail(post_id):
     prev_post = posts[curr_idx - 1] if curr_idx > 0 else None
     next_post = posts[curr_idx + 1] if curr_idx < len(posts) - 1 else None
 
-    try:
-        with open('data/comments.json', 'r', encoding='utf-8') as f:
-            all_comments = json.load(f)
-    except FileNotFoundError:
-        all_comments = []
+    all_comments = get_comments()
     
     post_comments = [c for c in all_comments if c['post_id'] == post_id]
 
@@ -398,8 +541,7 @@ def board_detail(post_id):
 @app.route('/board/<int:post_id>/edit')
 def board_edit(post_id):
     # 수정 화면 보여주기 (GET)
-    with open('data/posts.json', 'r', encoding='utf-8') as f:
-        posts = json.load(f)
+    posts = get_posts()
     post = next((p for p in posts if p['id'] == post_id), None)
     if not post: abort(404)
     return render_template('board/post_form.html', post=post)
@@ -412,11 +554,7 @@ def board_update():
     input_pw = request.form.get('password', '').strip()
     current_time = datetime.now().strftime("%Y.%m.%d %H:%M")
 
-    try:
-        with open('data/posts.json', 'r', encoding='utf-8') as f:
-            posts = json.load(f)
-    except FileNotFoundError:
-        posts = []
+    posts = get_posts()
 
     # 1. 새 글 작성
     if action == 'add':
@@ -435,8 +573,7 @@ def board_update():
             "content": content, "date": current_time
         }
         posts.append(new_post)
-        with open('data/posts.json', 'w', encoding='utf-8') as f:
-            json.dump(posts, f, indent=2, ensure_ascii=False)
+        save_posts(posts)
         return redirect('/board')
 
     # 2. 수정/삭제 공통 (기존 데이터 검증)
@@ -456,28 +593,19 @@ def board_update():
         post['title'] = new_title
         post['content'] = new_content
         post['date'] = current_time
-        with open('data/posts.json', 'w', encoding='utf-8') as f:
-            json.dump(posts, f, indent=2, ensure_ascii=False)
+        save_posts(posts)
         return redirect(f'/board/{post_id}')
         
     # 2-2. 삭제 처리
     elif action == 'delete':
         # 1) 게시글 삭제
         posts.remove(post)
-        with open('data/posts.json', 'w', encoding='utf-8') as f:
-            json.dump(posts, f, indent=2, ensure_ascii=False)
+        save_posts(posts)
 
         # 2) 연쇄 삭제: 해당 게시글에 달린 댓글도 모두 삭제
-        try:
-            with open('data/comments.json', 'r', encoding='utf-8') as f:
-                all_comments = json.load(f)
-            
-            filtered_comments = [c for c in all_comments if c['post_id'] != post_id]
-            
-            with open('data/comments.json', 'w', encoding='utf-8') as f:
-                json.dump(filtered_comments, f, indent=2, ensure_ascii=False)
-        except (FileNotFoundError, json.JSONDecodeError):
-            pass
+        all_comments = get_comments()
+        filtered_comments = [c for c in all_comments if c['post_id'] != post_id]
+        save_comments(filtered_comments)
 
         return redirect('/board')
 
@@ -485,8 +613,7 @@ def board_update():
 
 @app.route('/comments/<int:comment_id>/edit')
 def comment_edit_view(comment_id):
-    with open('data/comments.json', 'r', encoding='utf-8') as f:
-        comments = json.load(f)
+    comments = get_comments()
     comment = next((c for c in comments if c['id'] == comment_id), None)
     if not comment: abort(404)
     return redirect(url_for('board_detail', post_id=comment['post_id'], edit_comment_id=comment_id) + f"#comment-{comment_id}")
@@ -500,11 +627,7 @@ def comment_update():
     input_pw = request.form.get('password', '').strip()
     current_time = datetime.now().strftime("%Y.%m.%d %H:%M")
 
-    try:
-        with open('data/comments.json', 'r', encoding='utf-8') as f:
-            comments = json.load(f)
-    except FileNotFoundError:
-        comments = []
+    comments = get_comments()
 
     # 1. 새 댓글 작성
     if action == 'add':
@@ -519,8 +642,7 @@ def comment_update():
             "date": current_time
         }
         comments.append(new_comment)
-        with open('data/comments.json', 'w', encoding='utf-8') as f:
-            json.dump(comments, f, indent=2, ensure_ascii=False)
+        save_comments(comments)
         return redirect(f'/board/{post_id}')
 
     # 2. 수정/삭제 공통
@@ -534,16 +656,14 @@ def comment_update():
         comment['author'] = request.form.get('author', '').strip()
         comment['content'] = request.form.get('content', '').strip()
         comment['date'] = current_time
-        with open('data/comments.json', 'w', encoding='utf-8') as f:
-            json.dump(comments, f, indent=2, ensure_ascii=False)
+        save_comments(comments)
         return redirect(f'/board/{comment["post_id"]}#comment-{comment_id}')
 
     # 2-2. 삭제 처리
     elif action == 'delete':
         target_post_id = comment['post_id']
         comments.remove(comment)
-        with open('data/comments.json', 'w', encoding='utf-8') as f:
-            json.dump(comments, f, indent=2, ensure_ascii=False)
+        save_comments(comments)
         return redirect(f'/board/{target_post_id}')
 
 
