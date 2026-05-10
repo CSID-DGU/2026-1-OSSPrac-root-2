@@ -363,6 +363,7 @@ def get_posts():
 @app.route('/board')
 def board_list():
     posts = get_posts() 
+    posts.reverse()
     return render_template('board/post_list.html', posts=posts)
 
 @app.route('/board/write')

@@ -12,8 +12,7 @@
     <table border="1">
         <thead>
             <tr>
-                <th>번호</th>
-                <th>제목</th>
+                <th>번호</th> <th>제목</th>
                 <th>작성자</th>
                 <th>작성일</th>
             </tr>
@@ -21,9 +20,9 @@
         <tbody>
             {% for post in posts %}
             <tr>
-                <td>{{ post.id }}</td>
+                <td>{{ loop.revindex }}</td> 
+                
                 <td>
-                    <!-- 제목 클릭 시 상세 페이지로 이동 -->
                     <a href="/board/{{ post.id }}">{{ post.title }}</a>
                 </td>
                 <td>{{ post.author }}</td>
