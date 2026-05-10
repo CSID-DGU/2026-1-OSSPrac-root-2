@@ -8,7 +8,12 @@
     <h2>{% if post %}게시글 수정{% else %}새 글 작성{% endif %}</h2>
     <hr>
     
-    <form action="{% if post %}/board/{{ post.id }}/edit{% else %}/board/write{% endif %}" method="POST">
+    <form action="/board/update" method="POST">
+        
+        {% if post %}
+            <input type="hidden" name="post_id" value="{{ post.id }}">
+        {% endif %}
+
         <p>
             <label>제목: </label><br>
             <input type="text" name="title" value="{{ post.title if post else '' }}" required style="width: 100%;">
@@ -34,20 +39,16 @@
 
         <p>
             <label>내용: </label><br>
-            <textarea name="content" rows="10" style="width: 100%;" required>{{ post.content if post else '' }}</textarea>
+            <textarea name="content" rows="10" style="width: 100%; white-space: pre-wrap;" required>{{ post.content if post else '' }}</textarea>
         </p>
 
         <hr>
-        <button type="submit">
-            {% if post %}수정 완료{% else %}등록하기{% endif %}
-        </button>
-
+        
         {% if post %}
-        <button type="submit" 
-                formaction="/board/{{ post.id }}/delete" 
-                onclick="return confirm('정말 삭제하시겠습니까?')">
-            이 게시글 삭제하기
-        </button>
+            <button type="submit" name="action" value="edit">수정 완료</button>
+            <button type="submit" name="action" value="delete" onclick="return confirm('정말 삭제하시겠습니까?')">이 게시글 삭제하기</button>
+        {% else %}
+            <button type="submit" name="action" value="add">등록하기</button>
         {% endif %}
 
         <a href="javascript:history.back()">

@@ -354,6 +354,8 @@ def reset_team():
     session.pop("generated_team", None)
     return redirect(url_for("input_page"))
 
+# 게시글 CRUD =====================================================================
+
 def get_posts():
     with open('data/posts.json', 'r', encoding='utf-8') as f:
         return json.load(f)
@@ -361,248 +363,170 @@ def get_posts():
 @app.route('/board')
 def board_list():
     posts = get_posts() 
-    return render_template('board.html', posts=posts)
+    return render_template('board/post_list.html', posts=posts)
 
-@app.route('/board/write', methods=['GET', 'POST'])
+@app.route('/board/write')
 def board_write():
-    if request.method == 'POST':
-        # 1. 데이터 가져오기 및 공백 제거
-        title = request.form.get('title', '').strip()
-        author = request.form.get('author', '').strip()
-        password = request.form.get('password', '').strip()
-        content = request.form.get('content', '').strip()
+    return render_template('board/post_form.html', post=None)
 
-        # 2. 필수 항목 누락 체크 (하나라도 비어있으면 에러)
-        if not title or not author or not password or not content:
-            # 나중에는 '알림창'을 띄우겠지만, 일단은 명확하게 에러 메시지를 보여줍니다.
-            return "오류: 모든 항목을 입력해야 합니다. (제목, 작성자, 비밀번호, 내용)", 400
-        if not (password.isdigit() and len(password) == 4):
-            return "오류: 비밀번호는 숫자 4자리여야 합니다.", 400
-
-        # 3. 기존 게시글 목록 읽어오기
-        with open('data/posts.json', 'r', encoding='utf-8') as f:
-            posts = json.load(f)
-
-        # 4. 새로운 게시글 객체 생성 (ID 부여 및 날짜 포함)
-        new_id = posts[-1]['id'] + 1 if posts else 1
-        new_post = {
-            "id": new_id,
-            "title": title,
-            "author": author,
-            "password": password,
-            "content": content,
-            "date": datetime.now().strftime("%Y.%m.%d")
-        }
-
-        # 5. 저장 및 리다이렉트
-        posts.append(new_post)
-        with open('data/posts.json', 'w', encoding='utf-8') as f:
-            json.dump(posts, f, indent=2, ensure_ascii=False)
-
-        return redirect('/board')
-    # 글쓰기일 때는 post 데이터를 None으로 보냄
-    return render_template('write.html', post=None)
-    
 @app.route('/board/<int:post_id>')
 def board_detail(post_id):
-    # 1. 게시글 데이터 가져오기
     with open('data/posts.json', 'r', encoding='utf-8') as f:
         posts = json.load(f)
     
-    # 2. 현재 게시글 객체 찾기
     post = next((p for p in posts if p['id'] == post_id), None)
-    if not post:
-        abort(404)
+    if not post: abort(404)
 
-    # 3. 이전글/다음글 계산 (인덱스 번호 기준)
     curr_idx = posts.index(post)
-    
-    # 이전글: 현재 인덱스가 0보다 커야 존재함
     prev_post = posts[curr_idx - 1] if curr_idx > 0 else None
-    
-    # 다음글: 현재 인덱스가 마지막 번호보다 작아야 존재함
     next_post = posts[curr_idx + 1] if curr_idx < len(posts) - 1 else None
 
-    # 4. 댓글 데이터 가져와서 필터링 (post_id가 일치하는 것만)
-    # comments.json 파일이 없으면 빈 리스트로 시작하도록 예외 처리
     try:
         with open('data/comments.json', 'r', encoding='utf-8') as f:
             all_comments = json.load(f)
     except FileNotFoundError:
         all_comments = []
     
-    # 이 게시글에 달린 댓글만 골라내기
     post_comments = [c for c in all_comments if c['post_id'] == post_id]
 
-    # 5. 템플릿에 데이터 완벽하게 전달
-    return render_template('detail.html', 
-                           post=post, 
-                           prev_id=prev_post['id'] if prev_post else None,
+    return render_template('board/post_detail.html', 
+                           post=post, prev_id=prev_post['id'] if prev_post else None,
                            next_id=next_post['id'] if next_post else None,
-                           comments=post_comments) # 임시 빈 리스트([]) 대신 필터링된 실제 댓글 전달!
+                           comments=post_comments)
 
-@app.route('/board/<int:post_id>/edit', methods=['GET', 'POST'])
+@app.route('/board/<int:post_id>/edit')
 def board_edit(post_id):
+    # 수정 화면 보여주기 (GET)
     with open('data/posts.json', 'r', encoding='utf-8') as f:
         posts = json.load(f)
     post = next((p for p in posts if p['id'] == post_id), None)
+    if not post: abort(404)
+    return render_template('board/post_form.html', post=post)
+
+# 통합된 라우트 1: 게시글 생성/수정/삭제를 한번에 처리
+@app.route('/board/update', methods=['POST'])
+def board_update():
+    action = request.form.get('action', 'add') # add, edit, delete 중 하나
+    post_id = request.form.get('post_id', type=int)
+    input_pw = request.form.get('password', '').strip()
+
+    try:
+        with open('data/posts.json', 'r', encoding='utf-8') as f:
+            posts = json.load(f)
+    except FileNotFoundError:
+        posts = []
+
+    # 1. 새 글 작성
+    if action == 'add':
+        title = request.form.get('title', '').strip()
+        author = request.form.get('author', '').strip()
+        content = request.form.get('content', '').strip()
+
+        if not all([title, author, input_pw, content]):
+            return "<script>alert('모든 항목을 입력해야 합니다.'); history.back();</script>"
+        if not (input_pw.isdigit() and len(input_pw) == 4):
+            return "<script>alert('비밀번호는 숫자 4자리여야 합니다.'); history.back();</script>"
+
+        new_post = {
+            "id": posts[-1]['id'] + 1 if posts else 1,
+            "title": title, "author": author, "password": input_pw,
+            "content": content, "date": datetime.now().strftime("%Y.%m.%d")
+        }
+        posts.append(new_post)
+        with open('data/posts.json', 'w', encoding='utf-8') as f:
+            json.dump(posts, f, indent=2, ensure_ascii=False)
+        return redirect('/board')
+
+    # 2. 수정/삭제 공통 (기존 데이터 검증)
+    post = next((p for p in posts if p['id'] == post_id), None)
+    if not post: abort(404)
     
-    if request.method == 'POST':
-        # 3. 사용자가 입력한 데이터 가져오기
-        input_pw = request.form.get('password', '').strip()
+    if str(input_pw) != str(post['password']):
+        return "<script>alert('비밀번호가 일치하지 않습니다.'); history.back();</script>"
+
+    # 2-1. 수정 처리
+    if action == 'edit':
         new_title = request.form.get('title', '').strip()
         new_content = request.form.get('content', '').strip()
-
-        # 4. 비밀번호 검증 (설계하신 핵심 로직!)
-        if input_pw != post['password']:
-            return "<script>alert('비밀번호가 일치하지 않습니다.'); history.back();</script>"
-
-        # 5. 필수 항목 검증 (공백 등)
         if not new_title or not new_content:
             return "<script>alert('제목과 내용을 모두 입력해주세요.'); history.back();</script>"
 
-        # 6. 데이터 업데이트 (작성자, 날짜, ID는 유지)
         post['title'] = new_title
         post['content'] = new_content
-        # 선택 사항: 수정된 날짜를 표시하고 싶다면 아래 주석 해제
-        # post['date'] = datetime.now().strftime("%Y.%m.%d (수정됨)")
-
-        # 7. 파일에 다시 저장
         with open('data/posts.json', 'w', encoding='utf-8') as f:
             json.dump(posts, f, indent=2, ensure_ascii=False)
-
-        # 8. 수정 완료 후 상세 페이지로 이동
         return redirect(f'/board/{post_id}')
-    
-    # GET 요청 시: 기존 데이터를 담아서 수정 폼(edit.html)을 보여줌
-    return render_template('write.html', post=post)
+        
+    # 2-2. 삭제 처리
+    elif action == 'delete':
+        posts.remove(post)
+        with open('data/posts.json', 'w', encoding='utf-8') as f:
+            json.dump(posts, f, indent=2, ensure_ascii=False)
+        return redirect('/board')
 
-@app.route('/board/<int:post_id>/delete', methods=['POST'])
-def board_delete(post_id):
-    # 1. 사용자가 입력한 비밀번호 가져오기
+# 댓글 CRUD =====================================================================
+
+@app.route('/comments/<int:comment_id>/edit')
+def comment_edit_view(comment_id):
+    with open('data/comments.json', 'r', encoding='utf-8') as f:
+        comments = json.load(f)
+    comment = next((c for c in comments if c['id'] == comment_id), None)
+    if not comment: abort(404)
+    return redirect(url_for('board_detail', post_id=comment['post_id'], edit_comment_id=comment_id) + f"#comment-{comment_id}")
+
+# 통합된 라우트 2: 댓글 생성/수정/삭제를 한번에 처리
+@app.route('/comment/update', methods=['POST'])
+def comment_update():
+    action = request.form.get('action', 'add')
+    post_id = request.form.get('post_id', type=int)
+    comment_id = request.form.get('comment_id', type=int)
     input_pw = request.form.get('password', '').strip()
 
-    # 2. JSON 데이터 읽기
-    with open('data/posts.json', 'r', encoding='utf-8') as f:
-        posts = json.load(f)
-    
-    # 3. 해당 게시글 찾기
-    post = next((p for p in posts if p['id'] == post_id), None)
-    
-    if not post:
-        abort(404)
-
-    # 4. 비밀번호 검증 (설계하신 핵심 보안!)
-    if input_pw == post['password']:
-        # 데이터 삭제 (리스트에서 제거)
-        posts.remove(post)
-        
-        # 5. 변경된 리스트 저장
-        with open('data/posts.json', 'w', encoding='utf-8') as f:
-            json.dump(posts, f, indent=2, ensure_ascii=False)
-            
-        return redirect('/board') # 삭제 후 목록으로 이동
-    else:
-        # 비번 틀리면 다시 이전 화면(수정 페이지)으로
-        return "<script>alert('비밀번호가 틀렸습니다. 다시 확인해주세요.'); history.back();</script>"
-
-@app.route('/board/<int:post_id>/comments', methods=['POST'])
-def board_comment_create(post_id):
-    # 1. 사용자가 입력한 데이터 가져오기
-    author = request.form.get('author', '').strip()
-    password = request.form.get('password', '').strip()
-    content = request.form.get('content', '').strip()
-
-    if not (author and password and content):
-        return "<script>alert('모든 항목을 입력해주세요.'); history.back();</script>"
-
-    # 2. 기존 댓글 데이터 불러오기
     try:
         with open('data/comments.json', 'r', encoding='utf-8') as f:
             comments = json.load(f)
     except FileNotFoundError:
         comments = []
 
-    # 3. 새로운 댓글 객체 생성
-    new_comment = {
-        "id": int(datetime.now().timestamp() * 1000), # 고유 ID 생성
-        "post_id": post_id, # 현재 어떤 게시글인지 연결!
-        "author": author,
-        "password": password,
-        "content": content,
-        "date": datetime.now().strftime("%Y.%m.%d %H:%M")
-    }
+    # 1. 새 댓글 작성
+    if action == 'add':
+        author = request.form.get('author', '').strip()
+        content = request.form.get('content', '').strip()
+        if not all([author, input_pw, content]):
+            return "<script>alert('모든 항목을 입력해주세요.'); history.back();</script>"
 
-    # 4. 리스트에 추가하고 파일 저장
-    comments.append(new_comment)
-    with open('data/comments.json', 'w', encoding='utf-8') as f:
-        json.dump(comments, f, indent=2, ensure_ascii=False)
-
-    # 5. 작업 완료 후 다시 해당 게시글 상세 페이지로!
-    return redirect(f'/board/{post_id}')
-
-# 댓글 수정 처리
-@app.route('/comments/<int:comment_id>/edit', methods=['POST'])
-def comment_modify(comment_id):
-    # 1. 닉네임과 내용 모두 가져오기
-    new_author = request.form.get('author', '').strip()
-    new_content = request.form.get('content', '').strip()
-    input_pw = request.form.get('password', '').strip()
-
-    with open('data/comments.json', 'r', encoding='utf-8') as f:
-        comments = json.load(f)
-    
-    comment = next((c for c in comments if c['id'] == comment_id), None)
-    
-    if not comment: abort(404)
-
-    if input_pw == comment['password']:
-        # 닉네임과 내용 업데이트
-        comment['author'] = new_author
-        comment['content'] = new_content
-        
+        new_comment = {
+            "id": int(datetime.now().timestamp() * 1000), "post_id": post_id,
+            "author": author, "password": input_pw, "content": content,
+            "date": datetime.now().strftime("%Y.%m.%d %H:%M")
+        }
+        comments.append(new_comment)
         with open('data/comments.json', 'w', encoding='utf-8') as f:
             json.dump(comments, f, indent=2, ensure_ascii=False)
-        
-        # 수정 후 원래 위치로 스크롤 이동!
+        return redirect(f'/board/{post_id}')
+
+    # 2. 수정/삭제 공통
+    comment = next((c for c in comments if c['id'] == comment_id), None)
+    if not comment: abort(404)
+    if str(input_pw) != str(comment['password']):
+        return "<script>alert('비밀번호가 틀렸습니다.'); history.back();</script>"
+
+    # 2-1. 수정 처리
+    if action == 'edit':
+        comment['author'] = request.form.get('author', '').strip()
+        comment['content'] = request.form.get('content', '').strip()
+        with open('data/comments.json', 'w', encoding='utf-8') as f:
+            json.dump(comments, f, indent=2, ensure_ascii=False)
         return redirect(f'/board/{comment["post_id"]}#comment-{comment_id}')
-    else:
-        return "<script>alert('비밀번호가 틀렸습니다.'); history.back();</script>"
 
-# 댓글 수정 페이지 진입 (신호 보내기)
-@app.route('/comments/<int:comment_id>/edit')
-def comment_edit_view(comment_id):
-    with open('data/comments.json', 'r', encoding='utf-8') as f:
-        comments = json.load(f)
-    comment = next((c for c in comments if c['id'] == comment_id), None)
-    
-    # 주소 뒤에 #comment-ID를 붙여서 페이지가 열리자마자 해당 댓글로 점프하게 함
-    return redirect(url_for('board_detail', 
-                            post_id=comment['post_id'], 
-                            edit_comment_id=comment_id) + f"#comment-{comment_id}")
-    
-# 댓글 삭제 진짜로 처리하는 곳 (이게 있어야 에러가 안 나요!)
-@app.route('/comments/<int:comment_id>/delete', methods=['POST'])
-def comment_delete(comment_id):
-    input_pw = request.form.get('password', '').strip()
-    
-    with open('data/comments.json', 'r', encoding='utf-8') as f:
-        comments = json.load(f)
-    
-    comment = next((c for c in comments if c['id'] == comment_id), None)
-    if not comment: abort(404)
-
-    # 안전하게 문자열로 비교!
-    if str(input_pw) == str(comment['password']):
-        post_id = comment['post_id'] # 돌아갈 게시글 번호 미리 저장
-        comments.remove(comment) # 리스트에서 해당 댓글 삭제
-        
+    # 2-2. 삭제 처리
+    elif action == 'delete':
+        target_post_id = comment['post_id']
+        comments.remove(comment)
         with open('data/comments.json', 'w', encoding='utf-8') as f:
             json.dump(comments, f, indent=2, ensure_ascii=False)
-            
-        return redirect(f'/board/{post_id}') # 삭제 후 다시 게시글로
-    else:
-        return "<script>alert('비밀번호가 틀렸습니다.'); history.back();</script>"
+        return redirect(f'/board/{target_post_id}')
+
 
 if __name__ == "__main__":
     app.run(debug=True)
