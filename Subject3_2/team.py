@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, url_for, session, abort, req
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from datetime import datetime
+from io import BytesIO
 import os
 import json
 import uuid
@@ -20,6 +21,7 @@ ALLOWED_PORTFOLIO_EXTENSIONS = {
     "png", "jpg", "jpeg", "gif", "webp"
 }
 PREDEFINED_LANGUAGES = {"Python", "Java", "C/C++", "HTML/CSS", "SQL"}
+GEMINI_IMAGE_MODEL = os.getenv("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -124,6 +126,85 @@ def save_uploaded_asset(file, default_path="", default_name="", subfolder="", al
     return upload_path, file.filename
 
 
+def build_image_prompt(image_type, user_prompt, team=None, member=None):
+    base_style = (
+        "Create a polished, friendly image for a personal introduction website. "
+        "No readable text, no letters, no numbers, no captions, no watermark-like logo. "
+        "Clean composition, modern but warm, cute and approachable."
+    )
+
+    if image_type == "team":
+        return (
+            f"{base_style} Make a representative square team image, 1:1 aspect ratio. "
+            f"Team name: {team.get('team_name', '') if team else ''}. "
+            f"Team intro: {team.get('team_intro', '') if team else ''}. "
+            f"The user request may be written in Korean; interpret it naturally. "
+            f"User request: {user_prompt}"
+        )
+
+    return (
+        f"{base_style} Make a square cute animated avatar portrait in an iPhone "
+        f"Memoji-inspired 3D cartoon style. Not photorealistic, not an ID photo, "
+        f"adult person only, rounded face, expressive eyes, soft lighting, simple background. "
+        f"Do not include name, major, role, programming languages, or any other text information "
+        f"inside the image. "
+        f"The user request may be written in Korean; interpret it naturally. "
+        f"User request: {user_prompt}"
+    )
+
+
+def generate_gemini_image(prompt, subfolder="ai", aspect_ratio="1:1"):
+    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        return None
+
+    try:
+        from google import genai
+        from google.genai import errors
+        from google.genai import types
+        from PIL import Image
+    except ImportError:
+        return None
+
+    client = genai.Client(api_key=api_key)
+    try:
+        response = client.models.generate_content(
+            model=GEMINI_IMAGE_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_modalities=["IMAGE"],
+                image_config=types.ImageConfig(aspect_ratio=aspect_ratio)
+            )
+        )
+    except errors.APIError:
+        return None
+
+    if not response.candidates:
+        return None
+
+    content = response.candidates[0].content
+    if not content or not getattr(content, "parts", None):
+        return None
+
+    for part in content.parts:
+        if not getattr(part, "inline_data", None):
+            continue
+
+        image_bytes = part.inline_data.data
+        image = Image.open(BytesIO(image_bytes))
+
+        upload_folder = os.path.join(app.config["UPLOAD_FOLDER"], subfolder)
+        os.makedirs(upload_folder, exist_ok=True)
+
+        filename = f"{uuid.uuid4().hex}.png"
+        save_path = os.path.join(upload_folder, filename)
+        image.save(save_path, format="PNG")
+
+        return f"uploads/{subfolder}/{filename}"
+
+    return None
+
+
 @app.route("/")
 def index():
     # ROOT 팀 소개 메인 페이지
@@ -180,10 +261,19 @@ def update_member():
     team["team_intro"] = request.form.get("team_intro", team.get("team_intro", "")).strip()
 
     team_image = request.files.get("team_image")
-    team["team_image"] = save_uploaded_file(
-        team_image,
-        team.get("team_image", "images/default-team.png")
-    )
+    team_prompt = request.form.get("team_prompt", "").strip()
+    old_team_image = team.get("team_image", "images/default-team.png")
+
+    if team_image and team_image.filename:
+        team["team_image"] = save_uploaded_file(team_image, old_team_image)
+    elif team_prompt:
+        team["team_image"] = generate_gemini_image(
+            build_image_prompt("team", team_prompt, team=team),
+            subfolder="ai/team",
+            aspect_ratio="1:1"
+        ) or old_team_image
+    else:
+        team["team_image"] = old_team_image
 
     action = request.form.get("action", "add")
     member_id = request.form.get("member_id", type=int)  # 수정 여부 판단용
@@ -200,7 +290,8 @@ def update_member():
         save_generated_team(team)
         return redirect(url_for("input_page"))
 
-    profile_image = request.files.get("profile_image")
+    profile_image = request.files.get("profile_image") or request.files.get("image")
+    profile_ai_prompt = request.form.get("profile_ai_prompt", "").strip()
     github_id = request.form.get("github", "").strip()
     sns_id = request.form.get("sns", "").strip()
 
@@ -278,7 +369,16 @@ def update_member():
                 old_image = member.get("image", "images/default.png")
 
                 member_data["id"] = member_id
-                member_data["image"] = save_uploaded_file(profile_image, old_image)
+                if profile_image and profile_image.filename:
+                    member_data["image"] = save_uploaded_file(profile_image, old_image)
+                elif profile_ai_prompt:
+                    member_data["image"] = generate_gemini_image(
+                        build_image_prompt("profile", profile_ai_prompt, team=team, member=member_data),
+                        subfolder="ai/profile",
+                        aspect_ratio="1:1"
+                    ) or old_image
+                else:
+                    member_data["image"] = old_image
 
                 team["members"][idx] = member_data
                 save_generated_team(team)
@@ -296,7 +396,16 @@ def update_member():
     team["next_member_id"] = new_id + 1
 
     member_data["id"] = new_id
-    member_data["image"] = save_uploaded_file(profile_image, "images/default.png")
+    if profile_image and profile_image.filename:
+        member_data["image"] = save_uploaded_file(profile_image, "images/default.png")
+    elif profile_ai_prompt:
+        member_data["image"] = generate_gemini_image(
+            build_image_prompt("profile", profile_ai_prompt, team=team, member=member_data),
+            subfolder="ai/profile",
+            aspect_ratio="1:1"
+        ) or "images/default.png"
+    else:
+        member_data["image"] = "images/default.png"
 
     team["members"].append(member_data)
     save_generated_team(team)

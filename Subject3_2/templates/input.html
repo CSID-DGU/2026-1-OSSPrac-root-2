@@ -5,6 +5,73 @@
     <title>팀페이지 제작</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/input.css') }}">
+    <style>
+        .ai-loading-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(16, 18, 24, 0.56);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+        }
+
+        .ai-loading-overlay.is-active {
+            display: flex;
+        }
+
+        .ai-loading-panel {
+            width: min(360px, calc(100vw - 40px));
+            padding: 28px 26px;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+            text-align: center;
+        }
+
+        .ai-loading-spinner {
+            width: 38px;
+            height: 38px;
+            margin: 0 auto 16px;
+            border: 4px solid #e8e0ff;
+            border-top-color: #7c3aed;
+            border-radius: 50%;
+            animation: aiSpin 0.9s linear infinite;
+        }
+
+        .ai-loading-title {
+            margin: 0 0 8px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .ai-loading-desc {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #666;
+        }
+
+        @keyframes aiSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        body.dark-mode .ai-loading-panel {
+            background: #202232;
+        }
+
+        body.dark-mode .ai-loading-title {
+            color: #f4f4f8;
+        }
+
+        body.dark-mode .ai-loading-desc {
+            color: #c9cad6;
+        }
+    </style>
 </head>
 <body>
 <div class="page">
@@ -152,7 +219,7 @@
                 <div class="sketch-upload-box">
                     <div class="sketch-upload-top">
 
-                        <input type="file" name="image" class="sketch-file-input">
+                        <input type="file" name="profile_image" class="sketch-file-input">
 
                         <button type="button" class="file-clear-btn sketch-cancel-btn">
                             취소
@@ -273,8 +340,37 @@
         </form>
     </div>
 </div>
+<div class="ai-loading-overlay" id="aiLoadingOverlay" role="status" aria-live="polite">
+    <div class="ai-loading-panel">
+        <div class="ai-loading-spinner" aria-hidden="true"></div>
+        <p class="ai-loading-title">AI 이미지 생성 중</p>
+        <p class="ai-loading-desc">프롬프트를 바탕으로 사진을 만들고 있어요. 잠시만 기다려주세요.</p>
+    </div>
+</div>
 <script>
-document.querySelector("form").addEventListener("keydown", function(e) {
+const inputForm = document.querySelector("form");
+const aiLoadingOverlay = document.getElementById("aiLoadingOverlay");
+
+function hasValue(selector) {
+    const field = inputForm.querySelector(selector);
+    return field && field.value.trim().length > 0;
+}
+
+function hasFile(selector) {
+    const field = inputForm.querySelector(selector);
+    return field && field.files && field.files.length > 0;
+}
+
+inputForm.addEventListener("submit", function() {
+    const needsTeamImage = hasValue('textarea[name="team_prompt"]') && !hasFile('input[name="team_image"]');
+    const needsProfileImage = hasValue('textarea[name="profile_ai_prompt"]') && !hasFile('input[name="profile_image"]');
+
+    if (needsTeamImage || needsProfileImage) {
+        aiLoadingOverlay.classList.add("is-active");
+    }
+});
+
+inputForm.addEventListener("keydown", function(e) {
     if (e.key === "Enter" && e.target.tagName !== "TEXTAREA" && !e.isComposing) {
         e.preventDefault();
     }
