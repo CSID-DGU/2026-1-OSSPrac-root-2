@@ -2,26 +2,44 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>글쓰기</title>
+    <title>{% if post %}글 수정하기{% else %}글 쓰기{% endif %} - ROOT</title>
 </head>
 <body>
-    <h1>새 글 쓰기</h1>
+    <h2>{% if post %}게시글 수정{% else %}새 글 작성{% endif %}</h2>
+    <hr>
     
-    <!-- 사용자가 입력한 데이터를 서버로 쏴주는(POST) 폼입니다 -->
-    <form action="/board/write" method="POST">
-        <p>제목: <input type="text" name="title" required></p>
-        <p>작성자: <input type="text" name="author" required></p>
-        <p>비밀번호(숫자4자리):
-            <input type="password" 
-            name="password" 
-            minlength="4" 
-            maxlength="4" 
-            pattern="\d{4}" 
-            title="숫자 4자리를 입력해주세요" 
-            required></p>
-        <p>내용:<br><textarea name="content" rows="5" cols="40" required></textarea></p>
-        
-        <button type="submit">등록하기</button>
+    <form action="{% if post %}/board/{{ post.id }}/edit{% else %}/board/write{% endif %}" method="POST">
+        <p>
+            <label>제목: </label><br>
+            <input type="text" name="title" value="{{ post.title if post else '' }}" required style="width: 100%;">
+        </p>
+
+        <p>
+            <label>작성자: </label><br>
+            {% if post %}
+                <strong>{{ post.author }}</strong>
+                <input type="hidden" name="author" value="{{ post.author }}">
+            {% else %}
+                <input type="text" name="author" required>
+            {% endif %}
+        </p>
+
+        <p>
+            <label>비밀번호(4자리): </label><br>
+            <input type="password" name="password" placeholder="숫자 4자리" maxlength="4" pattern="\d{4}" required>
+            <small style="color: gray;">
+                {% if post %}수정을 위해 기존 비밀번호를 입력하세요.{% else %}글 관리를 위한 비밀번호를 설정하세요.{% endif %}
+            </small>
+        </p>
+
+        <p>
+            <label>내용: </label><br>
+            <textarea name="content" rows="10" style="width: 100%;" required>{{ post.content if post else '' }}</textarea>
+        </p>
+
+        <hr>
+        <button type="submit">{% if post %}수정 완료{% else %}등록하기{% endif %}</button>
+        <a href="javascript:history.back()"><button type="button">취소</button></a>
     </form>
 </body>
 </html>

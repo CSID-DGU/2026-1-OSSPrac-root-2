@@ -400,9 +400,8 @@ def board_write():
             json.dump(posts, f, indent=2, ensure_ascii=False)
 
         return redirect('/board')
-    
-    else:
-        return render_template('write.html')
+    # 글쓰기일 때는 post 데이터를 None으로 보냄
+    return render_template('write.html', post=None)
     
 @app.route('/board/<int:post_id>')
 def board_detail(post_id):
@@ -441,6 +440,42 @@ def board_detail(post_id):
                            prev_id=prev_post['id'] if prev_post else None,
                            next_id=next_post['id'] if next_post else None,
                            comments=post_comments) # 임시 빈 리스트([]) 대신 필터링된 실제 댓글 전달!
+
+@app.route('/board/<int:post_id>/edit', methods=['GET', 'POST'])
+def board_edit(post_id):
+    with open('data/posts.json', 'r', encoding='utf-8') as f:
+        posts = json.load(f)
+    post = next((p for p in posts if p['id'] == post_id), None)
+    
+    if request.method == 'POST':
+        # 3. 사용자가 입력한 데이터 가져오기
+        input_pw = request.form.get('password', '').strip()
+        new_title = request.form.get('title', '').strip()
+        new_content = request.form.get('content', '').strip()
+
+        # 4. 비밀번호 검증 (설계하신 핵심 로직!)
+        if input_pw != post['password']:
+            return "<script>alert('비밀번호가 일치하지 않습니다.'); history.back();</script>"
+
+        # 5. 필수 항목 검증 (공백 등)
+        if not new_title or not new_content:
+            return "<script>alert('제목과 내용을 모두 입력해주세요.'); history.back();</script>"
+
+        # 6. 데이터 업데이트 (작성자, 날짜, ID는 유지)
+        post['title'] = new_title
+        post['content'] = new_content
+        # 선택 사항: 수정된 날짜를 표시하고 싶다면 아래 주석 해제
+        # post['date'] = datetime.now().strftime("%Y.%m.%d (수정됨)")
+
+        # 7. 파일에 다시 저장
+        with open('data/posts.json', 'w', encoding='utf-8') as f:
+            json.dump(posts, f, indent=2, ensure_ascii=False)
+
+        # 8. 수정 완료 후 상세 페이지로 이동
+        return redirect(f'/board/{post_id}')
+    
+    # GET 요청 시: 기존 데이터를 담아서 수정 폼(edit.html)을 보여줌
+    return render_template('write.html', post=post)
 
 if __name__ == "__main__":
     app.run(debug=True)

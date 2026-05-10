@@ -1,4 +1,10 @@
     <!DOCTYPE html>
+    <style>
+    a {
+        text-decoration: none; /* 밑줄 제거 */
+        color: inherit;       /* 글자색을 부모 색상으로 유지 */
+    }
+</style>
     <html lang="ko">
     <head>
         <meta charset="UTF-8">
@@ -31,7 +37,20 @@
             <div style="border: 1px solid #000; padding: 20px; margin: 20px 0;">
                 {{ post.content | replace('\n', '<br>') | safe }}
             </div>
+
+            <div style="text-align: right; margin-bottom: 20px;">
+                <a href="/board/{{ post.id }}/edit">
+                    <button type="button">글 수정하기</button>
+                </a>
+
+                <a href="/board/{{ post.id }}/delete">
+                    <button type="button">글 삭제하기</button>
+                </a>
+                
+            </div>
+
         </article>
+        
 
         <hr>
 
