@@ -409,6 +409,7 @@ def board_update():
     action = request.form.get('action', 'add') # add, edit, delete 중 하나
     post_id = request.form.get('post_id', type=int)
     input_pw = request.form.get('password', '').strip()
+    current_time = datetime.now().strftime("%Y.%m.%d %H:%M")
 
     try:
         with open('data/posts.json', 'r', encoding='utf-8') as f:
@@ -430,7 +431,7 @@ def board_update():
         new_post = {
             "id": posts[-1]['id'] + 1 if posts else 1,
             "title": title, "author": author, "password": input_pw,
-            "content": content, "date": datetime.now().strftime("%Y.%m.%d")
+            "content": content, "date": current_time
         }
         posts.append(new_post)
         with open('data/posts.json', 'w', encoding='utf-8') as f:
@@ -453,6 +454,7 @@ def board_update():
 
         post['title'] = new_title
         post['content'] = new_content
+        post['date'] = current_time
         with open('data/posts.json', 'w', encoding='utf-8') as f:
             json.dump(posts, f, indent=2, ensure_ascii=False)
         return redirect(f'/board/{post_id}')
@@ -495,6 +497,7 @@ def comment_update():
     post_id = request.form.get('post_id', type=int)
     comment_id = request.form.get('comment_id', type=int)
     input_pw = request.form.get('password', '').strip()
+    current_time = datetime.now().strftime("%Y.%m.%d %H:%M")
 
     try:
         with open('data/comments.json', 'r', encoding='utf-8') as f:
@@ -512,7 +515,7 @@ def comment_update():
         new_comment = {
             "id": int(datetime.now().timestamp() * 1000), "post_id": post_id,
             "author": author, "password": input_pw, "content": content,
-            "date": datetime.now().strftime("%Y.%m.%d %H:%M")
+            "date": current_time
         }
         comments.append(new_comment)
         with open('data/comments.json', 'w', encoding='utf-8') as f:
@@ -529,6 +532,7 @@ def comment_update():
     if action == 'edit':
         comment['author'] = request.form.get('author', '').strip()
         comment['content'] = request.form.get('content', '').strip()
+        comment['date'] = current_time
         with open('data/comments.json', 'w', encoding='utf-8') as f:
             json.dump(comments, f, indent=2, ensure_ascii=False)
         return redirect(f'/board/{comment["post_id"]}#comment-{comment_id}')
