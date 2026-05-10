@@ -410,17 +410,21 @@ def board_detail(post_id):
     with open('data/posts.json', 'r', encoding='utf-8') as f:
         posts = json.load(f)
     
-    # 현재 게시글 찾기
+    # 2. 현재 게시글 객체 찾기
     post = next((p for p in posts if p['id'] == post_id), None)
     if not post:
         abort(404)
 
-    # 이전글/다음글 계산 (인덱스 활용)
+    # 3. 이전글/다음글 계산 (인덱스 번호 기준)
     curr_idx = posts.index(post)
+    
+    # 이전글: 현재 인덱스가 0보다 커야 존재함
     prev_post = posts[curr_idx - 1] if curr_idx > 0 else None
+    
+    # 다음글: 현재 인덱스가 마지막 번호보다 작아야 존재함
     next_post = posts[curr_idx + 1] if curr_idx < len(posts) - 1 else None
 
-    # 2. 댓글 데이터 가져와서 필터링 (post_id가 일치하는 것만)
+    # 4. 댓글 데이터 가져와서 필터링 (post_id가 일치하는 것만)
     # comments.json 파일이 없으면 빈 리스트로 시작하도록 예외 처리
     try:
         with open('data/comments.json', 'r', encoding='utf-8') as f:
@@ -428,14 +432,15 @@ def board_detail(post_id):
     except FileNotFoundError:
         all_comments = []
     
-    # 이 게시글에 달린 댓글만 골라내기 (데이터 사이언스의 Filtering!)
+    # 이 게시글에 달린 댓글만 골라내기
     post_comments = [c for c in all_comments if c['post_id'] == post_id]
 
+    # 5. 템플릿에 데이터 완벽하게 전달
     return render_template('detail.html', 
                            post=post, 
-                           comments=post_comments,
                            prev_id=prev_post['id'] if prev_post else None,
-                           next_id=next_post['id'] if next_post else None)
+                           next_id=next_post['id'] if next_post else None,
+                           comments=post_comments) # 임시 빈 리스트([]) 대신 필터링된 실제 댓글 전달!
 
 if __name__ == "__main__":
     app.run(debug=True)
