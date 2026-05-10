@@ -53,12 +53,26 @@
         <section>
             <h4>댓글 목록</h4>
             {% for comment in comments %}
-                <div style="border-bottom: 1px solid #eee; padding: 10px;">
-                    <strong>{{ comment.author }}</strong>: {{ comment.content }} 
-                    <small style="color: #888;">({{ comment.date }})</small>
+                <div id="comment-{{ comment.id }}" style="border-bottom: 1px solid #eee; padding: 10px;">
+                    
+                    {% if request.args.get('edit_comment_id')|int == comment.id %}
+                        <form action="/comments/{{ comment.id }}/edit" method="POST">
+                            <input type="text" name="author" value="{{ comment.author }}" placeholder="닉네임" required>
+                            <input type="password" name="password" placeholder="비밀번호" maxlength="4" required>
+                            <br>
+                            <textarea name="content" style="width: 100%; margin-top: 5px;">{{ comment.content }}</textarea>
+                            <br>
+                            <button type="submit">수정 완료</button>
+                            <button type="submit" formaction="/comments/{{ comment.id }}/delete">삭제</button>
+                            <a href="/board/{{ post.id }}#comment-{{ comment.id }}"><button type="button">취소</button></a>
+                        </form>
+                    {% else %}
+                        <strong>{{ comment.author }}</strong>: {{ comment.content }} 
+                        <small style="color: #888;">({{ comment.date }})</small>
+                        
+                        <a href="/comments/{{ comment.id }}/edit#comment-{{ comment.id }}" style="font-size: 0.8em; color: gray; margin-left: 10px;">[수정/삭제]</a>
+                    {% endif %}
                 </div>
-            {% else %}
-                <p>아직 댓글이 없습니다.</p>
             {% endfor %}
         </section>
 
