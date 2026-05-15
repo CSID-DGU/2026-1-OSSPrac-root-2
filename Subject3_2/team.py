@@ -252,7 +252,11 @@ def input_page():
         member_custom_language=member_custom_language,
         member_count=len(team.get("members", []))
     )
-
+    
+@app.route("/reset")
+def reset_team():
+    session.pop("generated_team", None)
+    return redirect(url_for('input_page'))
 
 @app.route("/member/update", methods=["POST"])
 def update_member():
@@ -463,10 +467,6 @@ def contact():
         "contact.html",
         members=members
     )
-@app.route("/reset")
-def reset_team():
-    session.pop("generated_team", None)
-    return redirect(url_for("input_page"))
 
 # 게시글 CRUD =====================================================================
 
