@@ -286,6 +286,18 @@ def update_member():
 
     action = request.form.get("action", "add")
     member_id = request.form.get("member_id", type=int)  # 수정 여부 판단용
+    # '뒤로가기' 버튼을 눌렀을 때의 행동
+    if action == "back":
+        save_generated_team(team) # 혹시 모르니 지금까지 쓴 팀 정보 저장
+        
+        members = team.get("members", [])
+        if members:
+            # 이미 저장된 팀원이 있다면, 방금 저장한 마지막 팀원의 정보를 불러옴
+            last_member_id = members[-1].get("id")
+            return redirect(url_for("input_page", member_id=last_member_id))
+        else:
+            # 저장된 팀원이 없으면 그냥 빈 화면 띄우기
+            return redirect(url_for("input_page"))
 
 
     # 이름 없으면 무시
