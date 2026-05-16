@@ -1,5 +1,4 @@
 from flask import Flask, render_template, redirect, url_for, session, abort, request
-from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from datetime import datetime
 from io import BytesIO
@@ -31,19 +30,16 @@ GEMINI_IMAGE_MODEL = os.getenv("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 def load_root_data():
-    # members.json에서 ROOT 팀 전체 데이터를 불러오기
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
 def load_root_team():
-    # ROOT 팀 소개 정보 반환
     data = load_root_data()
     return data.get("team", {})
 
 
 def load_root_members():
-    # ROOT 팀원 목록 반환
     data = load_root_data()
     return data.get("members", [])
 
@@ -212,7 +208,6 @@ def generate_gemini_image(prompt, subfolder="ai", aspect_ratio="1:1"):
 
 @app.route("/")
 def index():
-    # ROOT 팀 소개 메인 페이지
     team = load_root_team()
     members = load_root_members()
 
@@ -238,9 +233,6 @@ def team_page_entry():
 
 @app.route("/input")
 def input_page():
-    # 팀페이지 제작 및 팀원 입력/수정 페이지
-    # /input 새 팀원 입력 모드
-    # /input?member_id=1000 기존 팀원 수정 모드
     team = get_generated_team()
     member_id = request.args.get("member_id", type=int)
     edit_team = request.args.get("edit_team") == "1"
@@ -285,12 +277,8 @@ def reset_team():
 
 @app.route("/member/update", methods=["POST"])
 def update_member():
-    """
-    팀 정보 저장 + 팀원 추가 + 팀원 수정 처리
-    """
     team = get_generated_team()
 
-    # 팀 정보 저장
     team["team_name"] = request.form.get("team_name", team.get("team_name", "")).strip()
     team["team_intro"] = request.form.get("team_intro", team.get("team_intro", "")).strip()
 
@@ -310,24 +298,21 @@ def update_member():
         team["team_image"] = old_team_image
 
     action = request.form.get("action", "add")
-    member_id = request.form.get("member_id", type=int)  # 수정 여부 판단용
+    member_id = request.form.get("member_id", type=int)
     name = request.form.get("name", "").strip()
 
     if action == "save_team":
         save_generated_team(team)
         return redirect(url_for("result"))
 
-    # '뒤로가기' 버튼을 눌렀을 때의 행동
     if action == "back" and not name:
-        save_generated_team(team) # 혹시 모르니 지금까지 쓴 팀 정보 저장
-        
+        save_generated_team(team)
+
         members = team.get("members", [])
         if members:
-            # 이미 저장된 팀원이 있다면, 방금 저장한 마지막 팀원의 정보를 불러옴
             last_member_id = members[-1].get("id")
             return redirect(url_for("input_page", member_id=last_member_id, flow="edit"))
         else:
-            # 저장된 팀원이 없으면 그냥 빈 화면 띄우기
             return redirect(url_for("input_page"))
 
 
@@ -392,7 +377,6 @@ def update_member():
     if language_etc_checked and language_etc:
         languages.append(language_etc)
 
-    # 공통 member_data
     member_data = {
         "name": name,
         "student_number": request.form.get("student_number", "").strip(),
@@ -411,7 +395,6 @@ def update_member():
         "portfolio": portfolio
     }
 
-    # 수정 로직 (member_id 존재하면 수정)
     if member_id:
         for idx, member in enumerate(team.get("members", [])):
             if int(member.get("id")) == member_id:
@@ -455,7 +438,6 @@ def update_member():
 
         abort(404)
 
-    # 새 팀원 추가
     if len(team.get("members", [])) >= 4:
         save_generated_team(team)
         return redirect(url_for("input_page"))
@@ -489,7 +471,6 @@ def update_member():
 
 @app.route("/result")
 def result():
-    # 생성된 팀페이지 결과 화면
     team = get_generated_team()
 
     return render_template(
@@ -540,15 +521,12 @@ def delete_generated_member(member_id):
 
 @app.route("/contact")
 def contact():
-    # 비상연락망 페이지
     members = load_root_members()
 
     return render_template(
         "contact.html",
         members=members
     )
-
-# 게시글 CRUD =====================================================================
 
 def read_json_file(path, default=None):
     try:
@@ -595,16 +573,6 @@ def merge_seed_and_runtime(seed_path, runtime_path):
     ]
 
     return with_board_source(seed_items, "seed") + with_board_source(user_items, "runtime")
-
-
-def get_runtime_posts():
-    ensure_board_runtime_file(POSTS_RUNTIME_FILE)
-    return read_json_file(POSTS_RUNTIME_FILE, [])
-
-
-def get_runtime_comments():
-    ensure_board_runtime_file(COMMENTS_RUNTIME_FILE)
-    return read_json_file(COMMENTS_RUNTIME_FILE, [])
 
 
 def get_posts():
@@ -664,23 +632,20 @@ def board_detail(post_id):
 
 @app.route('/board/<int:post_id>/edit')
 def board_edit(post_id):
-    # 수정 화면 보여주기 (GET)
     posts = get_posts()
     post = next((p for p in posts if p['id'] == post_id), None)
     if not post: abort(404)
     return render_template('board/post_form.html', post=post)
 
-# 통합된 라우트 1: 게시글 생성/수정/삭제를 한번에 처리
 @app.route('/board/update', methods=['POST'])
 def board_update():
-    action = request.form.get('action', 'add') # add, edit, delete 중 하나
+    action = request.form.get('action', 'add')
     post_id = request.form.get('post_id', type=int)
     input_pw = request.form.get('password', '').strip()
     current_time = datetime.now().strftime("%Y.%m.%d %H:%M")
 
     posts = get_posts()
 
-    # 1. 새 글 작성
     if action == 'add':
         title = request.form.get('title', '').strip()
         author = request.form.get('author', '').strip()
@@ -700,14 +665,12 @@ def board_update():
         save_posts(posts)
         return redirect('/board')
 
-    # 2. 수정/삭제 공통 (기존 데이터 검증)
     post = next((p for p in posts if p['id'] == post_id), None)
     if not post: abort(404)
 
     if str(input_pw) != str(post['password']):
         return "<script>alert('비밀번호가 일치하지 않습니다.'); history.back();</script>"
 
-    # 2-1. 수정 처리
     if action == 'edit':
         new_title = request.form.get('title', '').strip()
         new_content = request.form.get('content', '').strip()
@@ -719,21 +682,16 @@ def board_update():
         post['date'] = current_time
         save_posts(posts)
         return redirect(f'/board/{post_id}')
-        
-    # 2-2. 삭제 처리
+
     elif action == 'delete':
-        # 1) 게시글 삭제
         posts.remove(post)
         save_posts(posts)
 
-        # 2) 연쇄 삭제: 해당 게시글에 달린 댓글도 모두 삭제
         all_comments = get_comments()
         filtered_comments = [c for c in all_comments if c['post_id'] != post_id]
         save_comments(filtered_comments)
 
         return redirect('/board')
-
-# 댓글 CRUD =====================================================================
 
 @app.route('/comments/<int:comment_id>/edit')
 def comment_edit_view(comment_id):
@@ -742,7 +700,6 @@ def comment_edit_view(comment_id):
     if not comment: abort(404)
     return redirect(url_for('board_detail', post_id=comment['post_id'], edit_comment_id=comment_id) + f"#comment-{comment_id}")
 
-# 통합된 라우트 2: 댓글 생성/수정/삭제를 한번에 처리
 @app.route('/comment/update', methods=['POST'])
 def comment_update():
     action = request.form.get('action', 'add')
@@ -753,7 +710,6 @@ def comment_update():
 
     comments = get_comments()
 
-    # 1. 새 댓글 작성
     if action == 'add':
         author = request.form.get('author', '').strip()
         content = request.form.get('content', '').strip()
@@ -769,14 +725,12 @@ def comment_update():
         save_comments(comments)
         return redirect(f'/board/{post_id}')
 
-    # 2. 수정/삭제 공통
     comment = next((c for c in comments if c['id'] == comment_id), None)
     if not comment: abort(404)
 
     if str(input_pw) != str(comment['password']):
         return "<script>alert('비밀번호가 틀렸습니다.'); history.back();</script>"
 
-    # 2-1. 수정 처리
     if action == 'edit':
         comment['author'] = request.form.get('author', '').strip()
         comment['content'] = request.form.get('content', '').strip()
@@ -784,7 +738,6 @@ def comment_update():
         save_comments(comments)
         return redirect(f'/board/{comment["post_id"]}#comment-{comment_id}')
 
-    # 2-2. 삭제 처리
     elif action == 'delete':
         target_post_id = comment['post_id']
         comments.remove(comment)
