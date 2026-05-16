@@ -1,61 +1,180 @@
-# 2026-1 OSSPrac ROOT
+<div align="center">
 
-26-1 오픈소스소프트웨어실습 레포지토리입니다.
+# 🌿 TEAM ROOT
 
-## 프로젝트 구성
+**2026-1 오픈소스소프트웨어실습 팀 프로젝트**
+
+[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![Jinja2](https://img.shields.io/badge/Jinja2-B41717?style=for-the-badge&logo=jinja&logoColor=white)](https://jinja.palletsprojects.com/)
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
+[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Google Gemini](https://img.shields.io/badge/Gemini_AI-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Pillow](https://img.shields.io/badge/Pillow-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python-pillow.org/)
+
+</div>
+
+---
+
+## 📌 프로젝트 소개
+
+Flask 기반 팀 소개 웹 애플리케이션입니다.  
+ROOT 팀 소개 페이지와 함께, **누구나 자신만의 팀 페이지를 만들 수 있는 팀페이지 제작 기능**을 제공합니다.  
+Google Gemini AI를 활용한 프로필/팀 이미지 자동 생성, 질문게시판, 비상연락망 등을 포함합니다.
+
+---
+
+## ✨ 주요 기능
+
+### 🏠 ROOT 팀 소개
+- 팀 소개 메인 페이지 (팀 비전, 팀 소개 영상)
+- 팀원 카드 목록 및 팀원 상세 페이지 (포트폴리오, SNS/GitHub 링크)
+- 팀원 상세 페이지 PDF 저장
+
+### 💬 질문게시판
+- 게시글 CRUD (작성 · 수정 · 삭제) — 비밀번호 인증
+- 댓글 CRUD (작성 · 수정 · 삭제) — 비밀번호 인증
+- 게시글 이전/다음 탐색
+- 제목 · 작성자 · 전체 키워드 검색 (검색어 하이라이트)
+
+### ✏️ 팀페이지 제작
+- 팀명, 팀 소개, 팀 이미지 입력
+- 최대 **4명** 팀원 입력 (이름, 학번, 학과, 성별, 역할, 사용 언어, 연락처 등)
+- 포트폴리오 항목 추가 (제목, 기간, 역할, 설명)
+- 포트폴리오 링크 및 파일 첨부 (PDF, DOC, PPT, Excel, ZIP, 이미지)
+- 생성된 팀 페이지 결과 확인 및 팀원 수정/삭제
+- 생성된 팀 페이지 PDF 저장
+
+### 🤖 AI 이미지 생성 (Google Gemini)
+- 팀원 프로필 이미지를 텍스트 프롬프트로 자동 생성 (Memoji 스타일 3D 아바타)
+- 팀 대표 이미지를 텍스트 프롬프트로 자동 생성
+- 직접 이미지 업로드와 AI 생성 중 선택 가능
+
+### 📞 비상연락망
+- ROOT 팀원 연락처 페이지
+
+### 🌙 다크 모드
+- 전체 페이지 다크 모드 지원 (localStorage 기반 상태 유지)
+
+---
+
+## 🗂️ 프로젝트 구조
 
 ```text
 .
-├── Subject3_1/
+├── Subject3_1/                   # 입력 폼 실습
 │   ├── ex4.py
 │   └── templates/
 │       ├── input.html
 │       └── result.html
-└── Subject3_2/
-    ├── team.py
+│
+└── Subject3_2/                   # ROOT 팀 소개 & 팀페이지
+    ├── team.py                   # Flask 앱 메인
     ├── requirements.txt
+    ├── .env                      # 환경 변수 (API 키 등)
     ├── data/
-    │   └── members.json
-    ├── templates/
-    └── static/
+    │   ├── members.json          # ROOT 팀/팀원 정보 (시드)
+    │   ├── posts.json            # 게시판 초기 데이터 (시드)
+    │   └── comments.json         # 댓글 초기 데이터 (시드)
+    ├── instance/
+    │   └── board/
+    │       ├── posts.json        # 게시판 런타임 데이터
+    │       └── comments.json     # 댓글 런타임 데이터
+    ├── static/
+    │   ├── css/
+    │   ├── images/               # ROOT 팀 고정 이미지
+    │   ├── uploads/              # 업로드된 이미지/파일
+    │   │   ├── ai/               # AI 생성 이미지
+    │   │   │   ├── profile/
+    │   │   │   └── team/
+    │   │   └── portfolio/        # 포트폴리오 첨부 파일
+    │   └── videos/               # ROOT 팀 소개 영상
+    └── templates/
+        ├── index.html
+        ├── input.html
+        ├── result.html
+        ├── member_detail.html
+        ├── contact.html
+        └── board/
+            ├── post_list.html
+            ├── post_detail.html
+            └── post_form.html
 ```
 
-## Subject3_1
+---
 
-- 이름, 학번, 성별, 전공, 사용 언어 입력
-- 결과 페이지에서 입력값 표 형태로 출력
+## 🔗 라우트 목록
 
-### 실행 방법
+| Method | Route | 설명 |
+|--------|-------|------|
+| GET | `/` | ROOT 팀 소개 메인 |
+| GET | `/contact` | 비상연락망 |
+| GET | `/members/<id>` | ROOT 또는 생성 팀원 상세 페이지 |
+| POST | `/members/<id>/delete` | 생성 팀원 삭제 |
+| GET | `/team-page` | 팀페이지 제작 진입 (기존 여부에 따라 분기) |
+| GET | `/input` | 팀페이지 제작 · 팀원 입력/수정 |
+| POST | `/member/update` | 팀/팀원 정보 저장 및 수정 처리 |
+| GET | `/result` | 생성된 팀 페이지 결과 |
+| GET | `/reset` | 생성 중인 팀 정보 초기화 |
+| GET | `/board` | 질문게시판 목록 |
+| GET | `/board/write` | 게시글 작성 페이지 |
+| GET | `/board/<id>` | 게시글 상세 |
+| GET | `/board/<id>/edit` | 게시글 수정 페이지 |
+| POST | `/board/update` | 게시글 생성 · 수정 · 삭제 처리 |
+| GET | `/comments/<id>/edit` | 댓글 수정 리다이렉트 |
+| POST | `/comment/update` | 댓글 생성 · 수정 · 삭제 처리 |
 
-```bash
-cd Subject3_1
-python ex4.py
+---
+
+## 💾 데이터 저장
+
+| 데이터 | 저장 방식 |
+|--------|-----------|
+| ROOT 팀/팀원 정보 | `data/members.json` (정적 파일) |
+| 질문게시판 게시글 | `instance/board/posts.json` (런타임) |
+| 질문게시판 댓글 | `instance/board/comments.json` (런타임) |
+| 사용자 생성 팀 정보 | Flask **Session** (서버 메모리) |
+| 업로드 이미지/파일 | `static/uploads/` (UUID 파일명으로 저장) |
+| AI 생성 이미지 | `static/uploads/ai/profile/`, `static/uploads/ai/team/` |
+| 포트폴리오 첨부 파일 | `static/uploads/portfolio/` |
+
+> 게시판 데이터는 서버 최초 실행 시 `data/` 하위 시드 파일에서 `instance/board/`로 복사됩니다.
+
+---
+
+## 🖼️ 이미지 처리
+
+- 업로드 이미지는 UUID 기반 파일명으로 저장 (충돌 방지)
+- 지원 이미지 형식: `png`, `jpg`, `jpeg`, `gif`, `webp`
+- 포트폴리오 첨부 파일 형식: `pdf`, `doc`, `docx`, `ppt`, `pptx`, `xls`, `xlsx`, `zip`, 이미지
+- AI 이미지 생성: Google Gemini API (`gemini-2.5-flash-image`) 호출 후 PIL로 PNG 저장
+
+---
+
+## ⚙️ 환경 변수
+
+`.env` 파일을 `Subject3_2/` 하위에 생성하세요.
+
+```env
+SECRET_KEY=your_flask_secret_key
+GEMINI_API_KEY=your_google_gemini_api_key
+GEMINI_IMAGE_MODEL=gemini-2.5-flash-image
 ```
 
-접속 주소:
+| 변수 | 설명 | 기본값 |
+|------|------|--------|
+| `SECRET_KEY` | Flask 세션 암호화 키 | `dev-secret-key` |
+| `GEMINI_API_KEY` | Google Gemini API 키 | — |
+| `GEMINI_IMAGE_MODEL` | Gemini 이미지 생성 모델 | `gemini-2.5-flash-image` |
 
-```text
-http://127.0.0.1:5000
-```
+> `GEMINI_API_KEY`가 없으면 AI 이미지 생성 기능은 비활성화됩니다.
 
-## Subject3_2
+---
 
-ROOT 팀 소개 및 팀 페이지 생성 웹 애플리케이션입니다.
+## 🚀 실행 방법
 
-### 주요 기능
-
-- ROOT 팀 소개 페이지
-- ROOT 팀원 상세 페이지
-- 비상연락망 페이지
-- 팀 페이지 생성 기능
-    - 팀명, 팀 소개, 팀 이미지 입력
-    - 최대 4명의 팀원 정보 입력
-    - 프로필 이미지
-    - 포트폴리오
-    - 포트폴리오 링크 및 파일 첨부
-    - 팀원 상세 페이지 PDF 저장
-
-### 실행 방법
+**Subject3_2** (팀 소개 웹페이지)
 
 ```bash
 cd Subject3_2
@@ -63,60 +182,56 @@ pip install -r requirements.txt
 python team.py
 ```
 
-접속 주소:
+**Subject3_1** (입력 폼 실습)
 
-```text
-http://127.0.0.1:5000
+```bash
+cd Subject3_1
+python ex4.py
 ```
 
-## 주요 라우트
+접속 주소: `http://127.0.0.1:5000`
 
-| Route | Description |
-| --- | --- |
-| `/` | ROOT 팀 소개 메인 페이지 |
-| `/input` | 팀 페이지 생성 및 팀원 입력 페이지 |
-| `/input?member_id=<id>` | 생성 팀원 수정 페이지 |
-| `/member/update` | 팀/팀원 정보 저장 및 수정 처리 |
-| `/result` | 생성한 팀 페이지 결과 |
-| `/members/<id>` | ROOT 또는 생성 팀원 상세 페이지 |
-| `/contact` | ROOT 팀원 연락처 페이지 |
-| `/reset` | 생성 중인 팀 정보 초기화 |
+---
 
-## 데이터
+## 🌿 ROOT 팀을 소개합니다
 
-ROOT 팀과 ROOT 팀원 정보는 아래 JSON 파일에서 관리합니다.
+<table>
+  <tr>
+    <td align="center" width="220">
+      <img src="Subject3_2/static/images/root-member1.png" width="100"/><br/><br/>
+      <b>오승현</b><br/>
+      <sub>🎓 교육학과</sub><br/>
+      <sub>👑 팀장 · 프론트엔드</sub><br/><br/>
+      <a href="https://github.com/2024110423osh">
+        <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/>
+      </a>
+      &nbsp;
+    </td>
+    <td align="center" width="220">
+      <img src="Subject3_2/static/images/root-member2.png" width="100"/><br/><br/>
+      <b>김유미</b><br/>
+      <sub>🎓 산업시스템공학과</sub><br/>
+      <sub>🛠️ 팀원 · 백엔드</sub><br/><br/>
+      <a href="https://github.com/yumiykim">
+        <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/>
+      </a>
+      &nbsp;
+    </td>
+    <td align="center" width="220">
+      <img src="Subject3_2/static/images/root-member3.png" width="100"/><br/><br/>
+      <b>오지윤</b><br/>
+      <sub>🎓 경영정보학과</sub><br/>
+      <sub>🛠️ 팀원 · 백엔드</sub><br/><br/>
+      <a href="https://github.com/JeeyoonO">
+        <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/>
+      </a>
+      &nbsp;
+    </td>
+  </tr>
+</table>
 
-```text
-Subject3_2/data/members.json
-```
+---
 
-사용자가 생성한 팀 정보는 Flask session에 저장됩니다.
-
-## 업로드 파일
-
-업로드 파일은 `Subject3_2/static/uploads/` 하위에 저장됩니다.
-
-- 프로필/팀 이미지: `static/uploads/`
-- 포트폴리오 첨부 파일: `static/uploads/portfolio/`
-
-지원하는 포트폴리오 첨부 파일 확장자:
-
-```text
-pdf, doc, docx, ppt, pptx, xls, xlsx, zip, png, jpg, jpeg, gif, webp
-```
-
-## 팀원
-
-| 이름 | 학과 | 역할 |
-| --- | --- | --- | 
-| 오승현 | 교육학과 | 팀장, 프론트엔드 |
-| 김유미 | 산업시스템공학과 | 백엔드 |
-| 오지윤 | 경영정보학과 | 백엔드 |
-
-## 기술 스택
-
-- Python
-- Flask
-- Jinja2
-- HTML
-- CSS
+<div align="center">
+  <sub>2026-1 오픈소스소프트웨어실습 · Dongguk University</sub>
+</div>

@@ -37,9 +37,11 @@
                 <span>작성일 : {{ post.date }}</span>
             </div>
 
+            {% if post._source != 'seed' %}
             <div class="detail-action">
                 <a href="{{ url_for('board_edit', post_id=post.id) }}" class="detail-btn">게시글 수정</a>
             </div>
+            {% endif %}
         </div>
 
         <div class="detail-content">
@@ -89,9 +91,11 @@
                             <span class="comment-date">{{ comment.date }}</span>
                         </div>
 
+                        {% if comment._source != 'seed' %}
                         <div class="comment-actions">
                             <a href="{{ url_for('comment_edit_view', comment_id=comment.id) }}">수정/삭제</a>
                         </div>
+                        {% endif %}
                     </div>
 
                     <p class="comment-text">{{ comment.content }}</p>

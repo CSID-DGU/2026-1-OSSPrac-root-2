@@ -564,29 +564,73 @@ def write_json_file(path, data):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
-def ensure_board_runtime_file(runtime_path, seed_path):
+def ensure_board_runtime_file(runtime_path):
     if os.path.exists(runtime_path):
         return
 
-    write_json_file(runtime_path, read_json_file(seed_path, []))
+    write_json_file(runtime_path, [])
 
 
-def get_posts():
-    ensure_board_runtime_file(POSTS_RUNTIME_FILE, POSTS_SEED_FILE)
+def with_board_source(items, source):
+    sourced_items = []
+
+    for item in items:
+        sourced_item = dict(item)
+        sourced_item["_source"] = source
+        sourced_items.append(sourced_item)
+
+    return sourced_items
+
+
+def merge_seed_and_runtime(seed_path, runtime_path):
+    ensure_board_runtime_file(runtime_path)
+
+    seed_items = read_json_file(seed_path, [])
+    runtime_items = read_json_file(runtime_path, [])
+    seed_ids = {item.get("id") for item in seed_items}
+    user_items = [
+        item
+        for item in runtime_items
+        if item.get("id") not in seed_ids
+    ]
+
+    return with_board_source(seed_items, "seed") + with_board_source(user_items, "runtime")
+
+
+def get_runtime_posts():
+    ensure_board_runtime_file(POSTS_RUNTIME_FILE)
     return read_json_file(POSTS_RUNTIME_FILE, [])
 
 
-def save_posts(posts):
-    write_json_file(POSTS_RUNTIME_FILE, posts)
-
-
-def get_comments():
-    ensure_board_runtime_file(COMMENTS_RUNTIME_FILE, COMMENTS_SEED_FILE)
+def get_runtime_comments():
+    ensure_board_runtime_file(COMMENTS_RUNTIME_FILE)
     return read_json_file(COMMENTS_RUNTIME_FILE, [])
 
 
+def get_posts():
+    return merge_seed_and_runtime(POSTS_SEED_FILE, POSTS_RUNTIME_FILE)
+
+
+def save_posts(posts):
+    runtime_posts = [
+        {key: value for key, value in post.items() if key != "_source"}
+        for post in posts
+        if post.get("_source") != "seed"
+    ]
+    write_json_file(POSTS_RUNTIME_FILE, runtime_posts)
+
+
+def get_comments():
+    return merge_seed_and_runtime(COMMENTS_SEED_FILE, COMMENTS_RUNTIME_FILE)
+
+
 def save_comments(comments):
-    write_json_file(COMMENTS_RUNTIME_FILE, comments)
+    runtime_comments = [
+        {key: value for key, value in comment.items() if key != "_source"}
+        for comment in comments
+        if comment.get("_source") != "seed"
+    ]
+    write_json_file(COMMENTS_RUNTIME_FILE, runtime_comments)
 
 @app.route('/board')
 def board_list():
@@ -624,6 +668,8 @@ def board_edit(post_id):
     posts = get_posts()
     post = next((p for p in posts if p['id'] == post_id), None)
     if not post: abort(404)
+    if post.get("_source") == "seed":
+        return "<script>alert('기본 게시글은 수정하거나 삭제할 수 없습니다.'); history.back();</script>"
     return render_template('board/post_form.html', post=post)
 
 # 통합된 라우트 1: 게시글 생성/수정/삭제를 한번에 처리
@@ -648,9 +694,9 @@ def board_update():
             return "<script>alert('비밀번호는 숫자 4자리여야 합니다.'); history.back();</script>"
 
         new_post = {
-            "id": posts[-1]['id'] + 1 if posts else 1,
+            "id": max([post['id'] for post in posts], default=0) + 1,
             "title": title, "author": author, "password": input_pw,
-            "content": content, "date": current_time
+            "content": content, "date": current_time, "_source": "runtime"
         }
         posts.append(new_post)
         save_posts(posts)
@@ -659,6 +705,9 @@ def board_update():
     # 2. 수정/삭제 공통 (기존 데이터 검증)
     post = next((p for p in posts if p['id'] == post_id), None)
     if not post: abort(404)
+
+    if post.get("_source") == "seed":
+        return "<script>alert('기본 게시글은 수정하거나 삭제할 수 없습니다.'); history.back();</script>"
     
     if str(input_pw) != str(post['password']):
         return "<script>alert('비밀번호가 일치하지 않습니다.'); history.back();</script>"
@@ -719,7 +768,7 @@ def comment_update():
         new_comment = {
             "id": int(datetime.now().timestamp() * 1000), "post_id": post_id,
             "author": author, "password": input_pw, "content": content,
-            "date": current_time
+            "date": current_time, "_source": "runtime"
         }
         comments.append(new_comment)
         save_comments(comments)
@@ -728,6 +777,9 @@ def comment_update():
     # 2. 수정/삭제 공통
     comment = next((c for c in comments if c['id'] == comment_id), None)
     if not comment: abort(404)
+
+    if comment.get("_source") == "seed":
+        return "<script>alert('기본 댓글은 수정하거나 삭제할 수 없습니다.'); history.back();</script>"
     if str(input_pw) != str(comment['password']):
         return "<script>alert('비밀번호가 틀렸습니다.'); history.back();</script>"
 
