@@ -136,14 +136,12 @@
     color: #6c63ff;
 }
 
-.board-filter,
 .search-box {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.board-filter select,
 .search-box select,
 .search-box input {
     height: 44px;
@@ -160,7 +158,6 @@
     width: 260px;
 }
 
-.board-filter select:focus,
 .search-box select:focus,
 .search-box input:focus {
     border-color: #6c63ff;
@@ -200,12 +197,10 @@
         align-items: stretch;
     }
 
-    .board-filter,
     .search-box {
         width: 100%;
     }
 
-    .board-filter select,
     .search-box select,
     .search-box input,
     .search-box button {
@@ -827,9 +822,6 @@ body.dark-mode .highlight {
     color: #b9b3ff;
     padding: 1px 4px;
     border-radius: 6px;
-}
-body.dark-mode .board-page {
-    background: linear-gradient(135deg, #0f1020 0%, #141426 45%, #1b1b33 100%) !important;
 }
 /* =========================
    게시판 상세 다크모드
