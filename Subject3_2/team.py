@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
 
 DATA_FILE = os.path.join(app.root_path, "data", "members.json")
-BOARD_RUNTIME_DIR = os.path.join(app.instance_path, "board")
+BOARD_RUNTIME_DIR = os.path.join(app.root_path, "instance", "board")
 POSTS_SEED_FILE = os.path.join(app.root_path, "data", "posts.json")
 COMMENTS_SEED_FILE = os.path.join(app.root_path, "data", "comments.json")
 POSTS_RUNTIME_FILE = os.path.join(BOARD_RUNTIME_DIR, "posts.json")
