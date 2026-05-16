@@ -73,13 +73,18 @@
 
                     <div class="detail-buttons">
                         {% if is_root_member %}
-                        <a href="/" class="small-btn purple">목록으로</a>
+                        <a href="/" class="small-btn purple">팀페이지로</a>
                         {% else %}
-                        <a href="{{ url_for('result') }}" class="small-btn purple">목록으로</a>
+                        <a href="{{ url_for('result') }}" class="small-btn purple">팀페이지로</a>
                         {% endif %}
 
                         {% if not is_root_member %}
                         <a href="/input?member_id={{ member.id }}" class="small-btn purple">수정</a>
+                        <form action="{{ url_for('delete_generated_member', member_id=member.id) }}"
+                              method="post"
+                              class="inline-delete-form">
+                            <button type="submit" class="small-btn danger">삭제</button>
+                        </form>
                         {% endif %}
                     </div>
                 </div>

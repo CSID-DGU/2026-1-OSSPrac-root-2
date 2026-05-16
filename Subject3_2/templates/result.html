@@ -76,15 +76,14 @@
                     onclick="location.href='{{ url_for('reset_team') }}'">
                 팀 다시 만들기
             </button>
-            {% if members %}
-            <button type="button" class="btn-purple"
-                    onclick="location.href='{{ url_for('input_page', member_id=members[0].id, flow='edit') }}'">
-                수정하기
+            <button type="button" class="btn-outline"
+                    onclick="location.href='{{ url_for('input_page', edit_team=1) }}'">
+                팀 정보 수정
             </button>
-            {% else %}
+            {% if members|length < 4 %}
             <button type="button" class="btn-purple"
                     onclick="location.href='{{ url_for('input_page') }}'">
-                수정하기
+                팀원 추가
             </button>
             {% endif %}
             <button type="button" class="btn-purple" onclick="window.print()">

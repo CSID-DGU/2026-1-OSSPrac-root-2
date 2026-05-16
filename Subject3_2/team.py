@@ -243,6 +243,7 @@ def input_page():
     # /input?member_id=1000 기존 팀원 수정 모드
     team = get_generated_team()
     member_id = request.args.get("member_id", type=int)
+    edit_team = request.args.get("edit_team") == "1"
 
     members = team.get("members", [])
     member = None
@@ -273,7 +274,8 @@ def input_page():
         member_position=member_index + 1 if member_index is not None else None,
         member_custom_language=member_custom_language,
         member_count=len(members),
-        is_edit_flow=request.args.get("flow") == "edit"
+        is_edit_flow=request.args.get("flow") == "edit",
+        edit_team=edit_team
     )
     
 @app.route("/reset")
@@ -309,22 +311,25 @@ def update_member():
 
     action = request.form.get("action", "add")
     member_id = request.form.get("member_id", type=int)  # 수정 여부 판단용
+    name = request.form.get("name", "").strip()
+
+    if action == "save_team":
+        save_generated_team(team)
+        return redirect(url_for("result"))
+
     # '뒤로가기' 버튼을 눌렀을 때의 행동
-    if action == "back":
+    if action == "back" and not name:
         save_generated_team(team) # 혹시 모르니 지금까지 쓴 팀 정보 저장
         
         members = team.get("members", [])
         if members:
             # 이미 저장된 팀원이 있다면, 방금 저장한 마지막 팀원의 정보를 불러옴
             last_member_id = members[-1].get("id")
-            return redirect(url_for("input_page", member_id=last_member_id))
+            return redirect(url_for("input_page", member_id=last_member_id, flow="edit"))
         else:
             # 저장된 팀원이 없으면 그냥 빈 화면 띄우기
             return redirect(url_for("input_page"))
 
-
-    # 이름 없으면 무시
-    name = request.form.get("name", "").strip()
 
     if action == "make" and not member_id and not name:
         save_generated_team(team)
@@ -473,6 +478,10 @@ def update_member():
     team["members"].append(member_data)
     save_generated_team(team)
 
+    if action == "back":
+        previous_member = team["members"][-2] if len(team["members"]) > 1 else member_data
+        return redirect(url_for("input_page", member_id=previous_member["id"], flow="edit"))
+
     if action == "make":
         return redirect(url_for("result"))
 
@@ -511,6 +520,23 @@ def member_detail(member_id):
         )
 
     abort(404)
+
+@app.route("/members/<int:member_id>/delete", methods=["POST"])
+def delete_generated_member(member_id):
+    team = get_generated_team()
+    members = team.get("members", [])
+    remaining_members = [
+        member
+        for member in members
+        if int(member.get("id")) != member_id
+    ]
+
+    if len(remaining_members) == len(members):
+        abort(404)
+
+    team["members"] = remaining_members
+    save_generated_team(team)
+    return redirect(url_for("result"))
 
 @app.route("/contact")
 def contact():
