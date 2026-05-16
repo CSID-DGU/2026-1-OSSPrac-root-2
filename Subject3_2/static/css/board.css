@@ -990,3 +990,15 @@ body.dark-mode .detail-category {
     color: #b9b3ff;
     border: 1px solid rgba(108, 99, 255, 0.28);
 }
+body.dark-mode .write-buttons button[name="action"][value="delete"] {
+    background: rgba(255, 143, 163, 0.12) !important;
+    color: #ff9fb0 !important;
+    border: 1.5px solid rgba(255, 143, 163, 0.55) !important;
+    box-shadow: none !important;
+}
+
+body.dark-mode .write-buttons button[name="action"][value="delete"]:hover {
+    background: rgba(255, 143, 163, 0.2) !important;
+    color: #ffb3c1 !important;
+    border-color: #ffb3c1 !important;
+}

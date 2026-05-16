@@ -383,3 +383,26 @@
 body.dark-mode .disabled-link-box .link-handle {
     color: #9b9ba7 !important;
 }
+.small-btn.danger {
+    background: #fff1f3;
+    color: #ff4f6d;
+    border: 1.5px solid #ff9fb0;
+}
+
+.small-btn.danger:hover {
+    background: #ffe1e7;
+    color: #ff3158;
+    border-color: #ff7f96;
+}
+
+body.dark-mode .small-btn.danger {
+    background: rgba(255, 143, 163, 0.12) !important;
+    color: #ff9fb0 !important;
+    border: 1.5px solid rgba(255, 143, 163, 0.55) !important;
+}
+
+body.dark-mode .small-btn.danger:hover {
+    background: rgba(255, 143, 163, 0.2) !important;
+    color: #ffb3c1 !important;
+    border-color: #ffb3c1 !important;
+}
