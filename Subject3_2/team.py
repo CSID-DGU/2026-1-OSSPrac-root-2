@@ -222,6 +222,20 @@ def index():
         members=members
     )
 
+@app.route("/team-page")
+def team_page_entry():
+    team = get_generated_team()
+    has_generated_team = bool(
+        team.get("team_name") or
+        team.get("team_intro") or
+        team.get("members")
+    )
+
+    if has_generated_team:
+        return redirect(url_for("result"))
+
+    return redirect(url_for("input_page"))
+
 @app.route("/input")
 def input_page():
     # 팀페이지 제작 및 팀원 입력/수정 페이지
@@ -230,10 +244,16 @@ def input_page():
     team = get_generated_team()
     member_id = request.args.get("member_id", type=int)
 
+    members = team.get("members", [])
     member = None
+    member_index = None
     member_custom_language = ""
     if member_id:
-        member = get_generated_member_by_id(member_id)
+        for idx, generated_member in enumerate(members):
+            if int(generated_member.get("id")) == member_id:
+                member = generated_member
+                member_index = idx
+                break
 
         if member is None:
             abort(404)
@@ -249,8 +269,11 @@ def input_page():
         "input.html",
         team=team,
         member=member,
+        member_index=member_index,
+        member_position=member_index + 1 if member_index is not None else None,
         member_custom_language=member_custom_language,
-        member_count=len(team.get("members", []))
+        member_count=len(members),
+        is_edit_flow=request.args.get("flow") == "edit"
     )
     
 @app.route("/reset")
@@ -407,6 +430,16 @@ def update_member():
                 flow = request.form.get("flow", "")
 
                 if flow == "edit":
+                    if action == "previous" and idx > 0:
+                        previous_member_id = team["members"][idx - 1]["id"]
+                        return redirect(url_for("input_page", member_id=previous_member_id, flow="edit"))
+
+                    if action == "add_member" and len(team["members"]) < 4:
+                        return redirect(url_for("input_page"))
+
+                    if action == "save_result":
+                        return redirect(url_for("result"))
+
                     if idx + 1 < len(team["members"]):
                         next_member_id = team["members"][idx + 1]["id"]
                         return redirect(url_for("input_page", member_id=next_member_id, flow="edit"))
