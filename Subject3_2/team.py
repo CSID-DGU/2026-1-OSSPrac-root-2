@@ -668,8 +668,6 @@ def board_edit(post_id):
     posts = get_posts()
     post = next((p for p in posts if p['id'] == post_id), None)
     if not post: abort(404)
-    if post.get("_source") == "seed":
-        return "<script>alert('기본 게시글은 수정하거나 삭제할 수 없습니다.'); history.back();</script>"
     return render_template('board/post_form.html', post=post)
 
 # 통합된 라우트 1: 게시글 생성/수정/삭제를 한번에 처리
@@ -706,9 +704,6 @@ def board_update():
     post = next((p for p in posts if p['id'] == post_id), None)
     if not post: abort(404)
 
-    if post.get("_source") == "seed":
-        return "<script>alert('기본 게시글은 수정하거나 삭제할 수 없습니다.'); history.back();</script>"
-    
     if str(input_pw) != str(post['password']):
         return "<script>alert('비밀번호가 일치하지 않습니다.'); history.back();</script>"
 
@@ -778,8 +773,6 @@ def comment_update():
     comment = next((c for c in comments if c['id'] == comment_id), None)
     if not comment: abort(404)
 
-    if comment.get("_source") == "seed":
-        return "<script>alert('기본 댓글은 수정하거나 삭제할 수 없습니다.'); history.back();</script>"
     if str(input_pw) != str(comment['password']):
         return "<script>alert('비밀번호가 틀렸습니다.'); history.back();</script>"
 
