@@ -83,7 +83,7 @@
             <nav class="nav-menu">
                 <a href="/">ROOT팀 소개</a>
                 <a href="/board">질문게시판</a>
-                <a href="{{ url_for('input_page') }}" class="active">팀페이지 제작</a>
+                <a href="{{ url_for('reset_team') }}" class="active">팀페이지 제작</a>
                 <a href="/contact">Contact</a>
                     <button id="darkModeBtn" class="dark-mode-btn" type="button">
                         🌙
@@ -95,7 +95,11 @@
     <div class="input-container">
 
         <h1 class="input-title">
-            {% if member %}
+            {% if edit_team %}
+                팀 정보 수정
+            {% elif member and is_edit_flow %}
+                {{ member_position }}번째 팀원 정보 수정
+            {% elif member %}
                 팀원 정보 수정
             {% elif member_count == 0 %}
                 팀 및 팀원 정보 입력
@@ -112,7 +116,7 @@
             <input type="hidden" name="member_id" value="{{ member.id }}">
             {% endif %}
 
-            {% if (not member and member_count == 0) or (member and member.id == 1000 and request.args.get('flow') == 'edit') %}
+            {% if edit_team or (not member and member_count == 0) or (member and member.id == 1000 and request.args.get('flow') == 'edit') %}
             <section class="form-card">
                 <h2>팀 정보</h2>
 
@@ -144,11 +148,13 @@
             </section>
             {% endif %}
 
-            {% if member or member_count < 4 %}
+            {% if not edit_team and (member or member_count < 4) %}
             {% set portfolios = member.portfolio if member and member.portfolio else [{}] %}
             <section class="form-card">
                 <h2>
-                    {% if member %}
+                    {% if member and is_edit_flow %}
+                        {{ member_position }}번째 팀원 정보 수정
+                    {% elif member %}
                         팀원 정보 수정
                     {% elif member_count == 0 %}
                         첫 번째 팀원 정보
@@ -297,54 +303,84 @@
                     프로젝트 추가
                 </button>
             </section>
-            {% else %}
+            {% elif not edit_team %}
             <section class="form-card">
                 <h2>팀원 입력 완료</h2>
                 <p style="color:#666; font-size:15px; line-height:1.7;">
                     최대 4명의 팀원 정보가 모두 입력되었습니다.<br>
-                    제출하기 버튼을 눌러 결과 페이지로 이동하세요.
+                    결과 보기 버튼을 눌러 결과 페이지로 이동하세요.
                 </p>
             </section>
             {% endif %}
 
             <p style="text-align:right; font-size:13px; color:#666;">
-                현재 {{ member_count }} / 4명
+                {% if edit_team %}
+                    팀 정보 수정 중
+                {% elif member and is_edit_flow %}
+                    현재 {{ member_position }} / {{ member_count }}명 팀원 수정 중
+                {% else %}
+                    현재 {{ member_count }} / 4명
+                {% endif %}
             </p>
             <div class="form-buttons">
 
             <div class="form-buttons-left">
-                {% if not member %}
+                {% if edit_team %}
+                <button type="button" class="btn-light"
+                        onclick="location.href='{{ url_for('result') }}'">
+                    취소
+                </button>
+                {% elif not member %}
                 <button type="button" class="btn-light"
                         onclick="location.href='{{ url_for('reset_team') }}'">
                     처음부터
                 </button>
                 {% endif %}
 
-                {% if not member and member_count > 0 %}
+                {% if not edit_team and member and is_edit_flow and member_index > 0 %}
+                <button type="submit" name="action" value="previous" class="btn-light back-btn">
+                    이전 팀원
+                </button>
+                {% elif not edit_team and not member and member_count > 0 %}
                 <button type="submit" name="action" value="back" class="btn-light back-btn" formnovalidate>
-                    뒤로가기
+                    이전 팀원
                 </button>
                 {% endif %}
             </div>
 
             <div class="form-buttons-right">
-                {% if member %}
+                {% if edit_team %}
+                <button type="submit" name="action" value="save_team" class="btn-purple">
+                    저장
+                </button>
+                {% elif member and is_edit_flow %}
+                    {% if member_index + 1 < member_count %}
+                    <button type="submit" name="action" value="edit_next" class="btn-outline">
+                        다음 팀원
+                    </button>
+                    {% else %}
+                        {% if member_count < 4 %}
+                        <button type="submit" name="action" value="add_member" class="btn-outline">
+                            다음 팀원
+                        </button>
+                        {% endif %}
+                        <button type="submit" name="action" value="save_result" class="btn-purple">
+                            결과 보기
+                        </button>
+                    {% endif %}
+                {% elif member %}
                 <button type="submit" name="action" value="edit" class="btn-outline">
-                    수정 완료
+                    저장
                 </button>
-                {% elif member_count < 4 %}
+                {% elif member_count < 3 %}
                 <button type="submit" name="action" value="add" class="btn-outline">
-                    팀원 추가
-                </button>
-                {% else %}
-                <button type="button" class="btn-outline" disabled>
-                    최대 4명 완료
+                    다음 팀원
                 </button>
                 {% endif %}
 
-                {% if not member %}
+                {% if not edit_team and not member %}
                 <button type="submit" name="action" value="make" class="btn-purple">
-                    제출하기
+                    결과 보기
                 </button>
                 {% endif %}
             </div>

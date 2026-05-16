@@ -17,7 +17,7 @@
             <nav class="nav-menu">
                 <a href="/">ROOT팀 소개</a>
                 <a href="/board">질문게시판</a>
-                <a href="/input" class="active">팀페이지 제작</a>
+                <a href="{{ url_for('team_page_entry') }}" class="active">팀페이지 제작</a>
                 <a href="/contact">Contact</a>
                     <button id="darkModeBtn" class="dark-mode-btn" type="button">
                         🌙
@@ -76,10 +76,16 @@
                     onclick="location.href='{{ url_for('reset_team') }}'">
                 팀 다시 만들기
             </button>
-            <button type="button" class="btn-purple"
-                    onclick="location.href='{{ url_for('input_page', member_id=1000, flow='edit') }}'">
-                수정하기
+            <button type="button" class="btn-outline"
+                    onclick="location.href='{{ url_for('input_page', edit_team=1) }}'">
+                팀 정보 수정
             </button>
+            {% if members|length < 4 %}
+            <button type="button" class="btn-purple"
+                    onclick="location.href='{{ url_for('input_page') }}'">
+                팀원 추가
+            </button>
+            {% endif %}
             <button type="button" class="btn-purple" onclick="window.print()">
             전체 PDF 저장
             </button>

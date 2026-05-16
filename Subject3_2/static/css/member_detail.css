@@ -77,6 +77,9 @@
     text-decoration: none;
     font-size: 13px;
     font-weight: 700;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
 }
 
 .small-btn.gray {
@@ -87,6 +90,15 @@
 .small-btn.purple {
     background: #6c63ff;
     color: white;
+}
+
+.small-btn.danger {
+    background: #f1f1f5;
+    color: #333;
+}
+
+.inline-delete-form {
+    margin: 0;
 }
 
 .link-box-wrap {
