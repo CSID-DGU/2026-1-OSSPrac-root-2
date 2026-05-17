@@ -136,7 +136,15 @@ def build_image_prompt(image_type, user_prompt, team=None, member=None):
 
     if image_type == "team":
         return (
-            f"{base_style} Make a representative square team image, 1:1 aspect ratio. "
+            f"{base_style} Make a representative square team image in an iPhone Memoji-inspired "
+            f"3D cartoon style — not photorealistic, cute and polished, soft lighting, "
+            f"simple clean background. "
+            f"This is a team identity image, not individual portraits: "
+            f"use a logo, icon, mascot, or group concept that represents the team as a whole. "
+            f"If the image includes any human characters, give them East Asian skin tone and dark hair, "
+        f"but with large expressive rounded eyes, well-defined nose, and full lips "
+        f"in a Memoji / Pixar 3D cartoon style. "
+            f"1:1 aspect ratio. "
             f"Team name: {team.get('team_name', '') if team else ''}. "
             f"Team intro: {team.get('team_intro', '') if team else ''}. "
             f"The user request may be written in Korean; interpret it naturally. "
@@ -146,7 +154,9 @@ def build_image_prompt(image_type, user_prompt, team=None, member=None):
     return (
         f"{base_style} Make a square cute animated avatar portrait in an iPhone "
         f"Memoji-inspired 3D cartoon style. Not photorealistic, not an ID photo, "
-        f"adult person only, rounded face, expressive eyes, soft lighting, simple background. "
+        f"adult person only, rounded face, East Asian skin tone and dark hair, "
+        f"large expressive rounded eyes, well-defined nose, and full lips "
+        f"in a Memoji / Pixar 3D cartoon style, soft lighting, simple background. "
         f"Do not include name, major, role, programming languages, or any other text information "
         f"inside the image. "
         f"The user request may be written in Korean; interpret it naturally. "
