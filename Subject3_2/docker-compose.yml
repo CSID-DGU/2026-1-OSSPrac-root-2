@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    image: yumiykim/root-team-web:latest
+    container_name: root-team-web
+    ports:
+      - "8000:80"
+    env_file:
+      - .env
+    volumes:
+      - ./instance:/app/instance
+      - ./static/uploads:/app/static/uploads
